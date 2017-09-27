@@ -11,19 +11,21 @@
 #define IDD_PAGE_COLLECT                312
 #define IDD_PAGE_ADD                    313
 #define IDD_PAGE_MASS                   314
-#define IDC_TAB1                        1006
 #define IDC_TAB_MAIN                    1006
-#define IDC_LIST2                       1009
 #define IDC_BUTTON1                     1010
 #define IDC_COMBO1                      1011
+#define IDC_LIST1                       1013
+#define IDC_EDIT1                       1014
+#define IDC_MFCEDITBROWSE1              1015
+#define IDC_BUTTON2                     1016
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        315
+#define _APS_NEXT_RESOURCE_VALUE        316
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1013
+#define _APS_NEXT_CONTROL_VALUE         1017
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

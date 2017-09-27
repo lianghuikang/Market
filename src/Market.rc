@@ -163,8 +163,15 @@ IDD_PAGE_ACCOUNT DIALOGEX 0, 0, 327, 229
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LISTBOX         IDC_LIST2,0,0,90,126,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "登录",IDC_BUTTON1,39,140,50,14
+    PUSHBUTTON      "登录",IDC_BUTTON1,135,126,50,14
+    CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,12,111,123
+    EDITTEXT        IDC_EDIT1,172,34,79,14,ES_AUTOHSCROLL
+    LTEXT           "软件版本",IDC_STATIC,137,37,33,8
+    LTEXT           "软件路径",IDC_STATIC,137,17,33,8
+    CONTROL         "",IDC_MFCEDITBROWSE1,"MfcEditBrowse",WS_BORDER | WS_TABSTOP | 0x80,172,15,80,14
+    PUSHBUTTON      "自动检测",IDC_BUTTON2,255,33,50,14
+    GROUPBOX        "帐号列表",IDC_STATIC,0,0,125,142
+    GROUPBOX        "软件信息",IDC_STATIC,129,0,183,55
 END
 
 IDD_TAB_MAIN DIALOGEX 0, 0, 309, 177
@@ -279,6 +286,21 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_PAGE_ACCOUNT DLGINIT
+BEGIN
+    IDC_MFCEDITBROWSE1, 0x37c, 42, 0
+0x4d3c, 0x4346, 0x6445, 0x7469, 0x7242, 0x776f, 0x6573, 0x4d5f, 0x646f, 
+0x3e65, 0x3c31, 0x4d2f, 0x4346, 0x6445, 0x7469, 0x7242, 0x776f, 0x6573, 
+0x4d5f, 0x646f, 0x3e65, 
+    0
+END
 
 
 /////////////////////////////////////////////////////////////////////////////
