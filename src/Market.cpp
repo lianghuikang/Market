@@ -16,7 +16,7 @@
 
 // CMarketApp
 
-BEGIN_MESSAGE_MAP(CMarketApp, CWinApp)
+BEGIN_MESSAGE_MAP(CMarketApp, CWinAppEx)
 	ON_COMMAND(ID_APP_ABOUT, &CMarketApp::OnAppAbout)
 END_MESSAGE_MAP()
 
@@ -61,7 +61,7 @@ BOOL CMarketApp::InitInstance()
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
-	CWinApp::InitInstance();
+	CWinAppEx::InitInstance();
 
 
 	// 初始化 OLE 库
@@ -114,7 +114,7 @@ int CMarketApp::ExitInstance()
 	//TODO: 处理可能已添加的附加资源
 	AfxOleTerm(FALSE);
 
-	return CWinApp::ExitInstance();
+	return CWinAppEx::ExitInstance();
 }
 
 // CMarketApp 消息处理程序

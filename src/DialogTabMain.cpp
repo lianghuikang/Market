@@ -115,7 +115,7 @@ void CDialogTabMain::OnTcnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
 
 BEGIN_MESSAGE_MAP(CDialogTabMain, CDialogEx)
 	ON_WM_SIZE()
-	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB1, &CDialogTabMain::OnTcnSelchangeTab)
+	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB_MAIN, &CDialogTabMain::OnTcnSelchangeTab)
 END_MESSAGE_MAP()
 
 

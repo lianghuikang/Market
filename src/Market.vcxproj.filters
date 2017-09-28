@@ -51,6 +51,12 @@
     <ClInclude Include="..\include\DialogPageAccount.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\PublicFun.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\InfoManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Market.cpp">
@@ -78,6 +84,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DialogPageAccount.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PublicFun.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="InfoManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

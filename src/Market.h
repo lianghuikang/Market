@@ -14,7 +14,7 @@
 // 有关此类的实现，请参阅 Market.cpp
 //
 
-class CMarketApp : public CWinApp
+class CMarketApp : public CWinAppEx
 {
 public:
 	CMarketApp();
