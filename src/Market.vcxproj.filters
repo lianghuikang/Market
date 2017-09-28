@@ -57,6 +57,9 @@
     <ClInclude Include="..\include\InfoManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\PublicDef.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Market.cpp">

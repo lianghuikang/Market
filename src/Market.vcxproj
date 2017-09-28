@@ -115,6 +115,7 @@
     <ClInclude Include="..\include\DialogPageMass.h" />
     <ClInclude Include="..\include\DialogTabMain.h" />
     <ClInclude Include="..\include\InfoManager.h" />
+    <ClInclude Include="..\include\PublicDef.h" />
     <ClInclude Include="..\include\PublicFun.h" />
     <ClInclude Include="ChildView.h" />
     <ClInclude Include="MainFrm.h" />

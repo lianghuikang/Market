@@ -4,12 +4,14 @@
 #include "stdafx.h"
 #include "Market.h"
 #include "DialogPageAccount.h"
-#include "InfoManager.h"
+//#include "InfoManager.h"
 #include "PublicFun.h"
 #include "afxdialogex.h"
 #include <string>
 #include <list>
 #include <vector>
+
+extern CInfoGroup g_InfoGroup;
 
 // CDialogPageAccount 对话框
 
@@ -108,6 +110,68 @@ void CDialogPageAccount::OnBnClickedButtonStartup()
 }
 
 #if 1
+#if 1
+void CDialogPageAccount::OnBnClickedButtonDetect()
+{
+	g_InfoGroup.clear();
+
+	// 获取QQ号、主窗口、进程号、主线程号
+	CWnd* pDesktopWnd = CWnd::GetDesktopWindow();
+	CWnd* pWnd = pDesktopWnd->GetWindow(GW_CHILD);
+	while (NULL != pWnd)
+	{
+		CString cstrWindowText;
+		::GetWindowText(pWnd->GetSafeHwnd(), cstrWindowText.GetBuffer(256), 256);
+
+		if (L"QQ" == cstrWindowText)																							// 获取QQ顶层窗口
+		{
+			DWORD dwProcessId = 0;
+			DWORD dwThreadId = GetWindowThreadProcessId(pWnd->GetSafeHwnd(), &dwProcessId);										// 根据QQ顶层窗口获取主线程号
+
+			std::list<HWND> listThreadWnd;
+			EnumThreadWindows(dwThreadId, CDialogPageAccount::EnumThreadWndProc, (LPARAM)&listThreadWnd);						// 获取主线程下所有窗口
+			for (std::list<HWND>::iterator iter = listThreadWnd.begin(); iter != listThreadWnd.end(); ++iter)
+			{
+				std::wstring::size_type npos = std::wstring::npos;
+				CString cstrWindowText;
+				::GetWindowText(*iter, cstrWindowText.GetBuffer(256), 256);
+				std::wstring wstrWindowText = cstrWindowText.GetBuffer();
+				if (std::wstring::npos != (npos = wstrWindowText.find(L"qqexchangewnd_shortcut_prefix_")))
+				{
+					CInfoNode node;
+					node.number = wstrWindowText.substr(npos + 30);						// QQ号
+					node.windows = *iter;												// 主窗口
+					node.processid = dwProcessId;										// 进程号
+					node.threadid = dwThreadId;											// 主线程号
+					g_InfoGroup.push_back(node);
+					break;
+				}
+			}
+		}
+
+		pWnd = pWnd->GetWindow(GW_HWNDNEXT);
+	}
+
+	// 获取QQ其他信息
+
+	// 提示检测到的QQ数
+	CString tmp;
+	tmp.Format(_T("检测到%d个QQ客户端"), g_InfoGroup.size());
+	MessageBox(tmp, L"提示", MB_OK);
+
+	// 更新账号列表
+	m_listctlAccount.DeleteAllItems();
+	for (int i = 0; i < g_InfoGroup.size(); ++i)
+	{
+		CString tmp;
+		tmp.Format(_T("%d"), i + 1);
+		m_listctlAccount.InsertItem(i, tmp);
+		m_listctlAccount.SetItemState(i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+		m_listctlAccount.SetItemText(i, 1, g_InfoGroup[i].number.c_str());
+		m_listctlAccount.SetItemText(i, 3, g_InfoGroup[i].status.c_str());
+	}
+}
+#else
 void CDialogPageAccount::OnBnClickedButtonDetect()
 {
 	CInfoManager::GetInstance()->Clear();
@@ -169,6 +233,7 @@ void CDialogPageAccount::OnBnClickedButtonDetect()
 		m_listctlAccount.SetItemText(i, 3, InfoGroup[i].status.c_str());
 	}
 }
+#endif
 #else
 void CDialogPageAccount::OnBnClickedButtonDetect()
 {
