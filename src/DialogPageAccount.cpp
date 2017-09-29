@@ -94,14 +94,14 @@ void CDialogPageAccount::OnBnClickedButtonStartup()
 		return;
 	}
 
-	WaitForSingleObject(pi.hProcess, INFINITE);
-	DWORD dwExit = 0;
-	GetExitCodeProcess(pi.hProcess, &dwExit);
-	if (0 != dwExit)
-	{
-		MessageBox(L"启动QQ错误！", L"提示", MB_OK);
-		return;
-	}
+	//WaitForSingleObject(pi.hProcess, INFINITE);
+	//DWORD dwExit = 0;
+	//GetExitCodeProcess(pi.hProcess, &dwExit);
+	//if (0 != dwExit)
+	//{
+	//	MessageBox(L"启动QQ错误！", L"提示", MB_OK);
+	//	return;
+	//}
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 
@@ -109,8 +109,6 @@ void CDialogPageAccount::OnBnClickedButtonStartup()
 	//MessageBox(L"启动QQ成功！", L"提示", MB_OK);
 }
 
-#if 1
-#if 1
 void CDialogPageAccount::OnBnClickedButtonDetect()
 {
 	g_InfoGroup.clear();
@@ -153,10 +151,11 @@ void CDialogPageAccount::OnBnClickedButtonDetect()
 	}
 
 	// 获取QQ其他信息
+	CaptureCookies();
 
 	// 提示检测到的QQ数
 	CString tmp;
-	tmp.Format(_T("检测到%d个QQ客户端"), g_InfoGroup.size());
+	tmp.Format(_T("检测到 %d 个 QQ 客户端"), g_InfoGroup.size());
 	MessageBox(tmp, L"提示", MB_OK);
 
 	// 更新账号列表
@@ -171,109 +170,3 @@ void CDialogPageAccount::OnBnClickedButtonDetect()
 		m_listctlAccount.SetItemText(i, 3, g_InfoGroup[i].status.c_str());
 	}
 }
-#else
-void CDialogPageAccount::OnBnClickedButtonDetect()
-{
-	CInfoManager::GetInstance()->Clear();
-
-	// 获取QQ号、主窗口、进程号、主线程号
-	CWnd* pDesktopWnd = CWnd::GetDesktopWindow();
-	CWnd* pWnd = pDesktopWnd->GetWindow(GW_CHILD);
-	while (NULL != pWnd)
-	{
-		CString cstrWindowText;
-		::GetWindowText(pWnd->GetSafeHwnd(), cstrWindowText.GetBuffer(256), 256);
-
-		if (L"QQ" == cstrWindowText)																							// 获取QQ顶层窗口
-		{
-			DWORD dwProcessId = 0;
-			DWORD dwThreadId = GetWindowThreadProcessId(pWnd->GetSafeHwnd(), &dwProcessId);										// 根据QQ顶层窗口获取主线程号
-
-			std::list<HWND> listThreadWnd;
-			EnumThreadWindows(dwThreadId, CDialogPageAccount::EnumThreadWndProc, (LPARAM)&listThreadWnd);						// 获取主线程下所有窗口
-			for (std::list<HWND>::iterator iter = listThreadWnd.begin(); iter != listThreadWnd.end(); ++iter)
-			{
-				std::wstring::size_type npos = std::wstring::npos;
-				CString cstrWindowText;
-				::GetWindowText(*iter, cstrWindowText.GetBuffer(256), 256);
-				std::wstring wstrWindowText = cstrWindowText.GetBuffer();
-				if (std::wstring::npos != (npos = wstrWindowText.find(L"qqexchangewnd_shortcut_prefix_")))
-				{
-					CInfoNode node;
-					node.number = wstrWindowText.substr(npos + 30);						// QQ号
-					node.windows = *iter;												// 主窗口
-					node.processid = dwProcessId;										// 进程号
-					node.threadid = dwThreadId;											// 主线程号
-					CInfoManager::GetInstance()->Insert(node);
-					break;
-				}
-			}
-		}
-
-		pWnd = pWnd->GetWindow(GW_HWNDNEXT);
-	}
-
-	// 获取QQ其他信息
-
-	// 提示检测到的QQ数
-	CString tmp;
-	tmp.Format(_T("检测到%d个QQ"), CInfoManager::GetInstance()->Size());
-	MessageBox(tmp, L"提示", MB_OK);
-
-	// 更新账号列表
-	m_listctlAccount.DeleteAllItems();
-	CInfoGroup InfoGroup = CInfoManager::GetInstance()->Get();
-	for (int i = 0; i < InfoGroup.size(); ++i)
-	{
-		CString tmp;
-		tmp.Format(_T("%d"), i + 1);
-		m_listctlAccount.InsertItem(i, tmp);
-		m_listctlAccount.SetItemState(i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-		m_listctlAccount.SetItemText(i, 1, InfoGroup[i].number.c_str());
-		m_listctlAccount.SetItemText(i, 3, InfoGroup[i].status.c_str());
-	}
-}
-#endif
-#else
-void CDialogPageAccount::OnBnClickedButtonDetect()
-{
-	m_listctlAccount.DeleteAllItems();
-
-	CWnd* pDesktopWnd = CWnd::GetDesktopWindow();
-	CWnd* pWnd = pDesktopWnd->GetWindow(GW_CHILD);
-	while (NULL != pWnd)
-	{
-		CString cstrWindowText;
-		::GetWindowText(pWnd->GetSafeHwnd(), cstrWindowText.GetBuffer(256), 256);
-
-		if (L"QQ" == cstrWindowText)				// 获取QQ顶层窗口
-		{
-			DWORD dwProcessId = 0;
-			DWORD dwThreadId = GetWindowThreadProcessId(pWnd->GetSafeHwnd(), &dwProcessId);		// 根据QQ顶层窗口获取主线程号
-
-			std::list<HWND> listThreadWnd;
-			EnumThreadWindows(dwThreadId, CDialogPageAccount::EnumThreadWndProc, (LPARAM)&listThreadWnd);						// 获取主线程下所有窗口
-			for (std::list<HWND>::iterator iter = listThreadWnd.begin(); iter != listThreadWnd.end(); ++iter)
-			{
-				std::wstring::size_type npos = std::wstring::npos;
-				CString cstrWindowText;
-				::GetWindowText(*iter, cstrWindowText.GetBuffer(256), 256);
-				std::wstring wstrWindowText = cstrWindowText.GetBuffer();
-				if (std::wstring::npos != (npos = wstrWindowText.find(L"qqexchangewnd_shortcut_prefix_")))
-				{
-					std::wstring strQQ = wstrWindowText.substr(npos + 30);							// 获取QQ号
-					CString cstrRow;
-					int nRow = m_listctlAccount.GetItemCount();
-					cstrRow.Format(_T("%d"), nRow + 1);
-					m_listctlAccount.InsertItem(nRow, cstrRow);
-					m_listctlAccount.SetItemState(nRow, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-					m_listctlAccount.SetItemText(nRow, 1, strQQ.c_str());
-					break;
-				}
-			}
-		}
-
-		pWnd = pWnd->GetWindow(GW_HWNDNEXT);
-	}
-}
-#endif

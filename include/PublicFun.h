@@ -1,7 +1,8 @@
 #pragma once
 
+#include "PublicDef.h"
+#include "pcap.h"
 #include <sstream>
-#include <PublicDef.h>
 
 template<typename T>
 std::string TransToString(T src)
@@ -10,3 +11,9 @@ std::string TransToString(T src)
 	oss << src;
 	return oss.str();
 }
+
+int NetDevSize(pcap_if_t* pAllDev);
+
+int CaptureCookies();
+
+DWORD WINAPI ThreadProc_CaptureCookies(LPVOID lpParam);
