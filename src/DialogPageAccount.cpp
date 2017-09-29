@@ -53,6 +53,34 @@ void CDialogPageAccount::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_MFCEDITBROWSE_QQDIR, m_mfceditbrowserQqDir);
 }
 
+void CDialogPageAccount::OnTimer(UINT nIDEvent)
+{
+	HWND handle = NULL;
+	switch (nIDEvent)
+	{
+	case 1:
+		handle = ::FindWindowEx(GetDesktopWindow()->GetSafeHwnd(), 0, NULL, L"¿µ×Ð");
+		::SetForegroundWindow(handle);
+		keybd_event(VK_CONTROL, 0, 0, 0);
+		keybd_event('A', 0, 0, 0);
+		keybd_event('A', 0, KEYEVENTF_KEYUP, 0);
+		keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+
+		keybd_event('K', 0, 0, 0);
+		keybd_event('K', 0, KEYEVENTF_KEYUP, 0);
+				
+		keybd_event(VK_CONTROL, 0, 0, 0);
+		keybd_event(VK_RETURN, 0, 0, 0);												
+		keybd_event(VK_RETURN, 0, KEYEVENTF_KEYUP, 0);
+		keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+
+		break;
+	default:
+		break;
+	}
+	CDialog::OnTimer(nIDEvent);
+}
+
 HBRUSH CDialogPageAccount::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
 	return (HBRUSH)GetStockObject(WHITE_BRUSH);
@@ -66,9 +94,11 @@ BOOL CALLBACK CDialogPageAccount::EnumThreadWndProc(HWND hwnd, LPARAM lParam)
 }
 
 BEGIN_MESSAGE_MAP(CDialogPageAccount, CDialogEx)
+	ON_WM_TIMER()
 	ON_WM_CTLCOLOR()
 	ON_BN_CLICKED(IDC_BUTTON_STARTUP, &CDialogPageAccount::OnBnClickedButtonStartup)
 	ON_BN_CLICKED(IDC_BUTTON_DETECT, &CDialogPageAccount::OnBnClickedButtonDetect)
+	ON_BN_CLICKED(IDC_BUTTON1, &CDialogPageAccount::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 
@@ -169,4 +199,9 @@ void CDialogPageAccount::OnBnClickedButtonDetect()
 		m_listctlAccount.SetItemText(i, 1, g_InfoGroup[i].number.c_str());
 		m_listctlAccount.SetItemText(i, 3, g_InfoGroup[i].status.c_str());
 	}
+}
+
+void CDialogPageAccount::OnBnClickedButton1()
+{
+	SetTimer(1, 60000, NULL);
 }

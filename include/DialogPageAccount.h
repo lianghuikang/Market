@@ -19,6 +19,7 @@ public:
 protected:
 	virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
+	virtual void OnTimer(UINT nIDEvent);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 
 	static BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam);
@@ -31,4 +32,5 @@ protected:
 	CMFCEditBrowseCtrl m_mfceditbrowserQqDir;
 public:
 	afx_msg void OnBnClickedButtonDetect();
+	afx_msg void OnBnClickedButton1();
 };
