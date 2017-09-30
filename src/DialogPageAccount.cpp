@@ -56,24 +56,56 @@ void CDialogPageAccount::DoDataExchange(CDataExchange* pDX)
 void CDialogPageAccount::OnTimer(UINT nIDEvent)
 {
 	HWND handle = NULL;
+	int n = 0;
 	switch (nIDEvent)
 	{
 	case 1:
 		handle = ::FindWindowEx(GetDesktopWindow()->GetSafeHwnd(), 0, NULL, L"¿µ×Ð");
-		::SetForegroundWindow(handle);
-		keybd_event(VK_CONTROL, 0, 0, 0);
-		keybd_event('A', 0, 0, 0);
-		keybd_event('A', 0, KEYEVENTF_KEYUP, 0);
-		keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+		if (handle)
+		{
+			::PostMessage(handle, WM_KEYDOWN, 'K', 0);
+			::PostMessage(handle, WM_KEYDOWN, VK_RETURN, 0);
 
-		keybd_event('K', 0, 0, 0);
-		keybd_event('K', 0, KEYEVENTF_KEYUP, 0);
-				
-		keybd_event(VK_CONTROL, 0, 0, 0);
-		keybd_event(VK_RETURN, 0, 0, 0);												
-		keybd_event(VK_RETURN, 0, KEYEVENTF_KEYUP, 0);
-		keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
-
+			//keybd_event(VK_CONTROL, 0x2A, 0, 0);
+			////::PostMessage(handle, WM_KEYDOWN, VK_CONTROL, 0);
+			//::PostMessage(handle, WM_KEYDOWN, 'A', 0x001E0001);
+			//::PostMessage(handle, WM_KEYUP, 'A', 0xC01E0001);
+			////::PostMessage(handle, WM_KEYUP, VK_CONTROL, 0);
+			//keybd_event(VK_CONTROL, 0x2A, KEYEVENTF_KEYUP, 0);
+			//
+			//keybd_event(VK_CONTROL, 0x2A, 0, 0);
+			////::PostMessage(handle, WM_KEYDOWN, VK_CONTROL, 0);
+			//::PostMessage(handle, WM_KEYDOWN, 'V', 0x002F0001);
+			//::PostMessage(handle, WM_KEYUP, 'V', 0xC02F0001);
+			////::PostMessage(handle, WM_KEYUP, VK_CONTROL, 0);
+			//keybd_event(VK_CONTROL, 0x2A, KEYEVENTF_KEYUP, 0);
+			
+			//keybd_event(VK_CONTROL, 0x2A, 0, 0);
+			//::PostMessage(handle, WM_KEYDOWN, VK_CONTROL, 0);
+			//::PostMessage(handle, WM_KEYDOWN, VK_CONTROL, 0);
+			//::PostMessage(handle, WM_KEYDOWN, VK_RETURN, 0);
+			//::PostMessage(handle, WM_KEYUP, VK_RETURN, 0);
+			//::PostMessage(handle, WM_KEYUP, VK_CONTROL, 0);
+			//::PostMessage(handle, WM_KEYUP, VK_CONTROL, 0);
+			//keybd_event(VK_CONTROL, 0x2A, KEYEVENTF_KEYUP, 0);
+			
+			//n = MapVirtualKey(VK_RETURN, 0);
+			//n = MapVirtualKey('A', 0);
+			//n = MapVirtualKey('V', 0);
+			//::SetForegroundWindow(handle);
+			//keybd_event(VK_CONTROL, 0, 0, 0);
+			//keybd_event('A', 0, 0, 0);
+			//keybd_event('A', 0, KEYEVENTF_KEYUP, 0);
+			//keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+			//
+			//keybd_event('K', 0, 0, 0);
+			//keybd_event('K', 0, KEYEVENTF_KEYUP, 0);
+			//		
+			//keybd_event(VK_CONTROL, 0, 0, 0);
+			//keybd_event(VK_RETURN, 0, 0, 0);												
+			//keybd_event(VK_RETURN, 0, KEYEVENTF_KEYUP, 0);
+			//keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+		}
 		break;
 	default:
 		break;
