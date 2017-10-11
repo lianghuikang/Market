@@ -13,6 +13,7 @@ public:
 	std::wstring number;			// QQ号码
 	std::wstring nickname;			// 昵称
 	std::wstring status;			// 状态
+	std::wstring skey;				// skey
 	HWND		 windows;			// 主窗口
 	DWORD		 processid;			// 进程号
 	DWORD		 threadid;			// 主线程号
