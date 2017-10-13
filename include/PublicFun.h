@@ -20,6 +20,16 @@ int NetDevSize(pcap_if_t* pAllDev);
 
 int CaptureCookies();
 
+std::string CaptureNickname(const std::string& qq_number);
+
+int CheckStatus(CInfoNode& node);
+
+std::wstring StatusAsWString(E_STATUS_TYPE status);
+
+size_t write_fun_file(void *data, size_t size, size_t nmember, FILE* save);
+
+size_t write_fun_string(void *data, size_t size, size_t nmember, std::string* save);
+
 DWORD WINAPI ThreadProc_CaptureCookies(LPVOID lpParam);
 
 void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data);

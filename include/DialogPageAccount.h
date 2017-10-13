@@ -33,4 +33,5 @@ protected:
 public:
 	afx_msg void OnBnClickedButtonDetect();
 	afx_msg void OnBnClickedButton1();
+	afx_msg LRESULT OnRefresh(WPARAM wParam, LPARAM lParam);
 };

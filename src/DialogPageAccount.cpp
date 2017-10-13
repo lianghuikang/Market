@@ -13,6 +13,8 @@
 
 extern CInfoGroup g_InfoGroup;
 
+#define WM_REFRESH WM_USER + 1
+
 // CDialogPageAccount 对话框
 
 IMPLEMENT_DYNAMIC(CDialogPageAccount, CDialogEx)
@@ -60,18 +62,29 @@ void CDialogPageAccount::OnTimer(UINT nIDEvent)
 	switch (nIDEvent)
 	{
 	case 1:
-		handle = ::FindWindowEx(GetDesktopWindow()->GetSafeHwnd(), 0, NULL, L"康仔");
+		handle = ::FindWindowEx(GetDesktopWindow()->GetSafeHwnd(), 0, NULL, L"QQ");
 		if (handle)
 		{
-			::PostMessage(handle, WM_KEYDOWN, 'K', 0);
-			::PostMessage(handle, WM_KEYDOWN, VK_RETURN, 0);
-
-			//keybd_event(VK_CONTROL, 0x2A, 0, 0);
+			keybd_event(VK_CONTROL, 0x1D, 0, 0);
+			//::PostMessage(handle, WM_KEYDOWN, VK_CONTROL, 0x001D0001);
+			::PostMessage(handle, WM_KEYDOWN, 'A', 0x401E0001);
+			Sleep(50);
+			::PostMessage(handle, WM_KEYUP, 'A', 0xC01E0001);
 			////::PostMessage(handle, WM_KEYDOWN, VK_CONTROL, 0);
 			//::PostMessage(handle, WM_KEYDOWN, 'A', 0x001E0001);
 			//::PostMessage(handle, WM_KEYUP, 'A', 0xC01E0001);
 			////::PostMessage(handle, WM_KEYUP, VK_CONTROL, 0);
-			//keybd_event(VK_CONTROL, 0x2A, KEYEVENTF_KEYUP, 0);
+			keybd_event(VK_CONTROL, 0x1D, KEYEVENTF_KEYUP, 0);
+			//::PostMessage(handle, WM_KEYUP, VK_CONTROL, 0x801D0001);
+			
+			::PostMessage(handle, WM_KEYDOWN, '1', 0x00310001);
+			Sleep(50);
+			::PostMessage(handle, WM_KEYUP, '1', 0xC0310001);
+			//::PostMessage(handle, WM_KEYDOWN, VK_BACK, 0);
+			//::PostMessage(handle, WM_KEYUP, VK_BACK, 0);
+
+			//::PostMessage(handle, WM_KEYDOWN, '1', 0);
+			//::PostMessage(handle, WM_KEYUP, '1', 0);
 			//
 			//keybd_event(VK_CONTROL, 0x2A, 0, 0);
 			////::PostMessage(handle, WM_KEYDOWN, VK_CONTROL, 0);
@@ -131,6 +144,7 @@ BEGIN_MESSAGE_MAP(CDialogPageAccount, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_STARTUP, &CDialogPageAccount::OnBnClickedButtonStartup)
 	ON_BN_CLICKED(IDC_BUTTON_DETECT, &CDialogPageAccount::OnBnClickedButtonDetect)
 	ON_BN_CLICKED(IDC_BUTTON1, &CDialogPageAccount::OnBnClickedButton1)
+	ON_MESSAGE(WM_REFRESH, OnRefresh)
 END_MESSAGE_MAP()
 
 
@@ -200,7 +214,7 @@ void CDialogPageAccount::OnBnClickedButtonDetect()
 				{
 					CInfoNode node;
 					node.number = wstrWindowText.substr(npos + 30);						// QQ号
-					node.windows = *iter;												// 主窗口
+					node.windows = pWnd->GetSafeHwnd();									// 主窗口
 					node.processid = dwProcessId;										// 进程号
 					node.threadid = dwThreadId;											// 主线程号
 					g_InfoGroup.push_back(node);
@@ -212,15 +226,52 @@ void CDialogPageAccount::OnBnClickedButtonDetect()
 		pWnd = pWnd->GetWindow(GW_HWNDNEXT);
 	}
 
-	// 获取QQ其他信息
+	// 获取QQ skey等信息
 	CaptureCookies();
 
+	// 获取QQ 昵称
+	for (int i = 0; i < g_InfoGroup.size(); ++i)
+	{
+		g_InfoGroup[i].nickname = s2ws(CaptureNickname(ws2s(g_InfoGroup[i].number)));
+	}
+
+	// 识别QQ状态
+	for (int i = 0; i < g_InfoGroup.size(); ++i)
+	{
+		CheckStatus(g_InfoGroup[i]);
+	}
+
 	// 提示检测到的QQ数
+	int nNormal = 0;
+	int nException = 0;
+	for (int i = 0; i < g_InfoGroup.size(); ++i)
+	{
+		if (E_STATUS_NORMAL == g_InfoGroup[i].status)
+		{
+			++nNormal;
+		}
+		else if (E_STATUS_EXCEPTION == g_InfoGroup[i].status)
+		{
+			++nException;
+		}
+	}
+
 	CString tmp;
-	tmp.Format(_T("检测到 %d 个 QQ 客户端"), g_InfoGroup.size());
-	MessageBox(tmp, L"提示", MB_OK);
+	tmp.Format(_T("检测到 %d 个 QQ 客户端\n正常: %d\n异常: %d"), g_InfoGroup.size(), nNormal, nException);
+	MessageBox(tmp.GetBuffer(), L"提示", MB_OK);
+	//MessageBox((std::wstring(L"检测到 ") + s2ws(TransToString(g_InfoGroup.size())) + L" 个 QQ 客户端").c_str(), L"提示", MB_OK);
 
 	// 更新账号列表
+	this->SendMessage(WM_REFRESH, NULL, NULL);
+}
+
+void CDialogPageAccount::OnBnClickedButton1()
+{
+	SetTimer(1, 1000, NULL);
+}
+
+LRESULT CDialogPageAccount::OnRefresh(WPARAM wParam, LPARAM lParam)
+{
 	m_listctlAccount.DeleteAllItems();
 	for (int i = 0; i < g_InfoGroup.size(); ++i)
 	{
@@ -229,11 +280,9 @@ void CDialogPageAccount::OnBnClickedButtonDetect()
 		m_listctlAccount.InsertItem(i, tmp);
 		m_listctlAccount.SetItemState(i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 		m_listctlAccount.SetItemText(i, 1, g_InfoGroup[i].number.c_str());
-		m_listctlAccount.SetItemText(i, 3, g_InfoGroup[i].status.c_str());
+		m_listctlAccount.SetItemText(i, 2, g_InfoGroup[i].nickname.c_str());
+		m_listctlAccount.SetItemText(i, 3, StatusAsWString(g_InfoGroup[i].status).c_str());
 	}
-}
 
-void CDialogPageAccount::OnBnClickedButton1()
-{
-	SetTimer(1, 60000, NULL);
+	return 0;
 }
