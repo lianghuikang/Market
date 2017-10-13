@@ -1,4 +1,6 @@
 #pragma once
+#include "afxwin.h"
+#include "afxcmn.h"
 
 
 // CDialogAdd 对话框
@@ -15,8 +17,14 @@ public:
 	enum { IDD = IDD_PAGE_ADD };
 
 protected:
+	virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 
 	DECLARE_MESSAGE_MAP()
+	CComboBox m_comboAdd;
+	CListCtrl m_listctlAdd;
+public:
+	afx_msg void OnBnClickedButtonAdd();
+	afx_msg void OnBnClickedButtonImport();
 };

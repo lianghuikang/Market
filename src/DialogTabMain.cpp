@@ -89,17 +89,17 @@ void CDialogTabMain::OnTcnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
 		break;
 	case 1:
 		m_dialogPageAccount.ShowWindow(SW_HIDE);
-		m_dialogPageAdd.ShowWindow(SW_SHOW);
-		m_dialogPageCollect.ShowWindow(SW_HIDE);
-		m_dialogPageMass.ShowWindow(SW_HIDE);
-		m_dialogPageAdd.SetFocus();
-		break;
-	case 2:
-		m_dialogPageAccount.ShowWindow(SW_HIDE);
 		m_dialogPageAdd.ShowWindow(SW_HIDE);
 		m_dialogPageCollect.ShowWindow(SW_SHOW);
 		m_dialogPageMass.ShowWindow(SW_HIDE);
 		m_dialogPageCollect.SetFocus();
+		break;
+	case 2:
+		m_dialogPageAccount.ShowWindow(SW_HIDE);
+		m_dialogPageAdd.ShowWindow(SW_SHOW);
+		m_dialogPageCollect.ShowWindow(SW_HIDE);
+		m_dialogPageMass.ShowWindow(SW_HIDE);
+		m_dialogPageAdd.SetFocus();
 		break;
 	case 3:
 		m_dialogPageAccount.ShowWindow(SW_HIDE);

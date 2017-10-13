@@ -21,9 +21,23 @@ CDialogPageMass::~CDialogPageMass()
 {
 }
 
+BOOL CDialogPageMass::OnInitDialog()
+{
+	CDialogEx::OnInitDialog();
+
+	// 群发对象
+	m_comboMass.AddString(L"QQ好友");
+	m_comboMass.AddString(L"群组");
+	m_comboMass.AddString(L"群组成员");
+	m_comboMass.SetCurSel(0);
+
+	return TRUE;
+}
+
 void CDialogPageMass::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_COMBO_MASS, m_comboMass);
 }
 
 HBRUSH CDialogPageMass::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
@@ -33,7 +47,9 @@ HBRUSH CDialogPageMass::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 BEGIN_MESSAGE_MAP(CDialogPageMass, CDialogEx)
 	ON_WM_CTLCOLOR()
+	ON_BN_CLICKED(IDC_BUTTON_MASS, &CDialogPageMass::OnBnClickedButtonMass)
 END_MESSAGE_MAP()
 
-
-// CDialogPageMass 消息处理程序
+void CDialogPageMass::OnBnClickedButtonMass()
+{
+}
