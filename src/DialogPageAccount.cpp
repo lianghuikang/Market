@@ -40,7 +40,8 @@ BOOL CDialogPageAccount::OnInitDialog()
 	m_listctlAccount.InsertColumn(0, _T("ÐòºÅ"), LVCFMT_LEFT, 40);
 	m_listctlAccount.InsertColumn(1, _T("ÕËºÅ"), LVCFMT_LEFT, 80);
 	m_listctlAccount.InsertColumn(2, _T("êÇ³Æ"), LVCFMT_LEFT, nWidth - 200);
-	m_listctlAccount.InsertColumn(3, _T("×´Ì¬"), LVCFMT_LEFT, 80);
+	m_listctlAccount.InsertColumn(3, _T("×´Ì¬"), LVCFMT_LEFT, 40);
+	m_listctlAccount.InsertColumn(4, _T("skey"), LVCFMT_LEFT, 40);
 
 	SetDlgItemText(IDC_MFCEDITBROWSE_QQDIR, L"C:\\Program Files (x86)\\Tencent\\QQ");
 	//m_mfceditbrowserQqDir.EnableFolderBrowseButton();
@@ -282,6 +283,7 @@ LRESULT CDialogPageAccount::OnRefresh(WPARAM wParam, LPARAM lParam)
 		m_listctlAccount.SetItemText(i, 1, g_InfoGroup[i].number.c_str());
 		m_listctlAccount.SetItemText(i, 2, g_InfoGroup[i].nickname.c_str());
 		m_listctlAccount.SetItemText(i, 3, StatusAsWString(g_InfoGroup[i].status).c_str());
+		m_listctlAccount.SetItemText(i, 4, g_InfoGroup[i].skey.c_str());
 	}
 
 	return 0;

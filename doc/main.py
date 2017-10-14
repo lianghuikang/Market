@@ -35,8 +35,9 @@ cookies = {
 #'ptisp': 'cm',
 #'ptcz': '55e5cac8e47ccb717aa4fe9f05951d11f7c9528a082415be8ed4da8750a3ae99',
 #'pt2gguin': 'o0505519763',
-'uin': 'o0505519763', 	#no login
-'skey': '@SkpRIHzBh'	#basekey err
+'uin': 'o02287738680', 	#no login
+'skey': 'Z9qCcUaYhc'
+#'skey': '@SkpRIHzBh'	#basekey err
 }
 
 data = {
@@ -46,15 +47,15 @@ data = {
 'iso': '1',
 'src': '1',
 'v': '4903',
-'bkn': '776135898',
+'bkn': '1825472041',
 'isRecommend': 'false',
 'city_id': '0',
 'from': '1',
 'keyword': 'rthrth',
 'sort': '0',
-'wantnum': '500',
+'wantnum': '1',
 'page': '0',
-'ldw': '776135898'
+'ldw': '1825472041'
 }
 
 r = requests.post(url=url, headers=headers, cookies=cookies, data=data)

@@ -2,6 +2,7 @@
 #include "PublicFun.h"
 #include "curl/curl.h"
 #include "jsoncpp/json.h"
+#include <stdio.h>
 
 CInfoGroup g_InfoGroup;
 int		   g_InfoGroupIndex = 0;
@@ -214,6 +215,121 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 	}
 }
 
+int CollectBuddy()
+{
+	return 0;
+}
+
+std::string UTF8ToGBK(const std::string& strUTF8)  
+{  
+    int len = MultiByteToWideChar(CP_UTF8, 0, strUTF8.c_str(), -1, NULL, 0);  
+    WCHAR* wszGBK = new WCHAR[len+1];
+    memset(wszGBK, 0, len * 2 + 2);  
+    MultiByteToWideChar(CP_UTF8, 0, (LPCCH)strUTF8.c_str(), -1, wszGBK, len);  
+  
+    len = WideCharToMultiByte(CP_ACP, 0, wszGBK, -1, NULL, 0, NULL, NULL);  
+    char *szGBK = new char[len + 1];  
+    memset(szGBK, 0, len + 1);  
+    WideCharToMultiByte(CP_ACP,0, wszGBK, -1, szGBK, len, NULL, NULL);   
+    std::string strTemp(szGBK);  
+    delete[]szGBK;  
+    delete[]wszGBK;  
+    return strTemp;  
+}
+
+int CollectGroup()
+{
+	std::string qq_num = "2287738680";
+	std::string qq_skey = "Z9qCcUaYhc";
+
+	// 筛选QQ
+	//for (int i = 0; i < g_InfoGroup.size(); ++i)
+	//{
+	//	if (!g_InfoGroup[i].number.empty() && !g_InfoGroup[i].skey.empty())
+	//	{
+	//		qq_num = ws2s(g_InfoGroup[i].number);
+	//		qq_skey = ws2s(g_InfoGroup[i].skey);
+	//		break;
+	//	}
+	//}
+	//if (qq_num.empty() || qq_skey.empty())
+	//{
+	//	return -1;
+	//}
+
+	// post请求
+	curl_global_init(CURL_GLOBAL_ALL);
+
+	CURL* curl_handle = NULL;
+	curl_handle = curl_easy_init();
+	if (curl_handle)
+	{
+		int res = 0;
+		char szbuff[256] = {0};
+		std::string body;
+		std::string url = "http://qun.qq.com/cgi-bin/group_search/pc_group_search";
+
+		//curl_easy_setopt(curl_handle, CURLOPT_COOKIEFILE, "");
+
+        struct curl_slist *headers = NULL;
+        headers = curl_slist_append(headers, "Accept:application/json, text/javascript, */*; q=0.01");
+        headers = curl_slist_append(headers, "Accept-Encoding:gzip, deflate");
+        headers = curl_slist_append(headers, "Accept-Language:zh-CN,zh;q=0.8");
+        //headers = curl_slist_append(headers, "Connection:keep-alive");
+        //headers = curl_slist_append(headers, "Content-Length:148");	// 不能设
+        headers = curl_slist_append(headers, "Content-Type:application/x-www-form-urlencoded; charset=UTF-8");
+        headers = curl_slist_append(headers, "Host:qun.qq.com");
+        headers = curl_slist_append(headers, "Origin:http://find.qq.com");
+        headers = curl_slist_append(headers, "Referer:http://find.qq.com/index.html?version=1&im_version=5485&width=910&height=610&search_target=0");
+        headers = curl_slist_append(headers, "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36");
+        res = curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, headers);
+		
+		memset(szbuff, 0,sizeof(szbuff));
+		_snprintf(szbuff, sizeof(szbuff), "uin=o0%s; skey=%s", qq_num.c_str(), qq_skey.c_str());
+		res = curl_easy_setopt(curl_handle, CURLOPT_COOKIE, szbuff);
+		curl_easy_setopt(curl_handle, CURLOPT_ACCEPT_ENCODING, "gzip");
+
+        res = curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());   // 指定url
+		//res = curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1);
+		//res = curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
+		res = curl_easy_setopt(curl_handle, CURLOPT_POST, 1);
+		memset(szbuff, 0,sizeof(szbuff));
+		int token = GetCSRFToken(qq_skey);
+		std::string k = Unicode2Utf8(L"交友");
+		std::string keyword = Unicode2Utf8(L"123");
+		_snprintf(szbuff, sizeof(szbuff), "&n=8&st=1&iso=1&src=1&v=4903&bkn=%d&isRecommend=false&city_id=0&from=1&keyword=123&sort=0&wantnum=1&page=0&ldw=%d", token, token);
+        res = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, szbuff);    // 指定post内容
+		//res = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDSIZE, strlen("&n=8&st=1&iso=1&src=1&v=4903&bkn=1825472041&isRecommend=false&city_id=0&from=1&keyword=rthrth&sort=0&wantnum=1&page=0&ldw=1825472041"));
+		//res = curl_easy_setopt(curl_handle, CURLOPT_COOKIEFILE, "/Users/zhu/cookie");
+		res = curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_fun_string);
+		res = curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &body);
+		//res = curl_easy_setopt(curl_handle, CURLOPT_COOKIEJAR, "cookies");
+		res = curl_easy_perform(curl_handle);
+		if (res != CURLE_OK)
+		{
+			::MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), s2ws(curl_easy_strerror((CURLcode)res)).c_str(), L"提示", MB_OK);
+		}
+		int n = body.size();
+		::MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), Utf82Unicode(body).c_str(), L"提示", MB_OK);
+
+		curl_slist_free_all(headers);
+		curl_easy_cleanup(curl_handle);
+	}
+	
+	curl_global_cleanup();
+	return 0;
+}
+
+int GetCSRFToken(const std::string& e)
+{
+	int n = 5381;
+	for (int i= 0; i < e.length(); ++i)
+	{
+		n += (n << 5) + e[i];
+	}
+	return n & 2147483647;
+}
+
 std::string CaptureNickname(const std::string& qq_number)
 {
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -223,8 +339,8 @@ std::string CaptureNickname(const std::string& qq_number)
 	curl_handle = curl_easy_init();
 	if (curl_handle)
 	{
-		std::string url = "http://r.pengyou.com/fcg-bin/cgi_get_portrait.fcg?uins=" + qq_number;
 		std::string body;
+		std::string url = "http://r.pengyou.com/fcg-bin/cgi_get_portrait.fcg?uins=" + qq_number;
 		curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());	// char*类型，不是string
 		curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
 		curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_fun_string);
@@ -284,6 +400,59 @@ std::wstring StatusAsWString(E_STATUS_TYPE status)
 		return L"正常";
 	}
 }
+
+std::wstring Utf82Unicode(const std::string& utf8string)  
+{  
+    int widesize = ::MultiByteToWideChar(CP_UTF8, 0, utf8string.c_str(), -1, NULL, 0);  
+    if (widesize == ERROR_NO_UNICODE_TRANSLATION)  
+    {  
+        throw std::exception("Invalid UTF-8 sequence.");  
+    }  
+    if (widesize == 0)  
+    {  
+        throw std::exception("Error in conversion.");  
+    }  
+   
+    std::vector<wchar_t> resultstring(widesize);  
+   
+    int convresult = ::MultiByteToWideChar(CP_UTF8, 0, utf8string.c_str(), -1, &resultstring[0], widesize);  
+   
+    if (convresult != widesize)  
+    {  
+        throw std::exception("La falla!");  
+    }  
+   
+    return std::wstring(&resultstring[0]);  
+}
+
+std::string Unicode2Utf8(const std::wstring& widestring)  
+{  
+    int utf8size = ::WideCharToMultiByte(CP_UTF8, 0, widestring.c_str(), -1, NULL, 0, NULL, NULL);  
+    if (utf8size == 0)  
+    {  
+        throw std::exception("Error in conversion.");  
+    }  
+   
+    std::vector<char> resultstring(utf8size);  
+   
+    int convresult = ::WideCharToMultiByte(CP_UTF8, 0, widestring.c_str(), -1, &resultstring[0], utf8size, NULL, NULL);  
+   
+    if (convresult != utf8size)  
+    {  
+        throw std::exception("La falla!");  
+    }  
+   
+    return std::string(&resultstring[0]);  
+}  
+
+void UnicodeToUTF_8(char* pOut,wchar_t* pText)  
+{  
+   // 注意 WCHAR高低字的顺序,低字节在前，高字节在后  
+   char* pchar = (char *)pText;  
+   pOut[0] = (0xE0 | ((pchar[1] & 0xF0) >> 4));  
+   pOut[1] = (0x80 | ((pchar[1] & 0x0F) << 2)) + ((pchar[0] & 0xC0) >> 6);  
+   pOut[2] = (0x80 | (pchar[0] & 0x3F));
+}  
 
 size_t write_fun_file(void *data, size_t size, size_t nmember, FILE* save)
 {

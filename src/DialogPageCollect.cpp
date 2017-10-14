@@ -5,6 +5,7 @@
 #include "Market.h"
 #include "DialogPageCollect.h"
 #include "afxdialogex.h"
+#include "PublicFun.h"
 #include <string>
 
 #define WM_REFRESH WM_USER + 1
@@ -89,9 +90,21 @@ LRESULT CDialogPageCollect::OnRefresh(WPARAM wParam, LPARAM lParam)
 
 void CDialogPageCollect::OnBnClickedButtonCollect()
 {
-
-
 	int nIndex = m_comboCollect.GetCurSel();
+	switch (nIndex)
+	{
+	case 0:
+		CollectGroup();
+		//CollectBuddy();
+		break;
+	case 1:
+		CollectGroup();
+		break;
+	default:
+		return;
+	}
+
+
 
 	CString num;
 	m_editCollectNum.GetWindowText(num);

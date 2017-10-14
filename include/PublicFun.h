@@ -26,6 +26,10 @@ int CheckStatus(CInfoNode& node);
 
 std::wstring StatusAsWString(E_STATUS_TYPE status);
 
+std::wstring Utf82Unicode(const std::string& utf8string);
+
+std::string Unicode2Utf8(const std::wstring& widestring);
+
 size_t write_fun_file(void *data, size_t size, size_t nmember, FILE* save);
 
 size_t write_fun_string(void *data, size_t size, size_t nmember, std::string* save);
@@ -33,6 +37,12 @@ size_t write_fun_string(void *data, size_t size, size_t nmember, std::string* sa
 DWORD WINAPI ThreadProc_CaptureCookies(LPVOID lpParam);
 
 void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data);
+
+int CollectBuddy();
+
+int CollectGroup();
+
+int GetCSRFToken(const std::string& e);
 
 /* Ethernet Ê×²¿ */
 typedef struct ether_header{
