@@ -240,7 +240,7 @@ std::string UTF8ToGBK(const std::string& strUTF8)
 int CollectGroup()
 {
 	std::string qq_num = "2287738680";
-	std::string qq_skey = "Z9qCcUaYhc";
+	std::string qq_skey = "ZLKJhKr8DC";
 
 	// ɸѡQQ
 	//for (int i = 0; i < g_InfoGroup.size(); ++i)
