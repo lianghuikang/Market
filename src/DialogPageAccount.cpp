@@ -13,8 +13,6 @@
 
 extern CInfoGroup g_InfoGroup;
 
-#define WM_REFRESH WM_USER + 1
-
 // CDialogPageAccount 对话框
 
 IMPLEMENT_DYNAMIC(CDialogPageAccount, CDialogEx)
@@ -145,7 +143,7 @@ BEGIN_MESSAGE_MAP(CDialogPageAccount, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_STARTUP, &CDialogPageAccount::OnBnClickedButtonStartup)
 	ON_BN_CLICKED(IDC_BUTTON_DETECT, &CDialogPageAccount::OnBnClickedButtonDetect)
 	ON_BN_CLICKED(IDC_BUTTON1, &CDialogPageAccount::OnBnClickedButton1)
-	ON_MESSAGE(WM_REFRESH, OnRefresh)
+	ON_MESSAGE(WM_ACCOUNT_REFRESH, OnRefresh)
 END_MESSAGE_MAP()
 
 
@@ -263,7 +261,7 @@ void CDialogPageAccount::OnBnClickedButtonDetect()
 	//MessageBox((std::wstring(L"检测到 ") + s2ws(TransToString(g_InfoGroup.size())) + L" 个 QQ 客户端").c_str(), L"提示", MB_OK);
 
 	// 更新账号列表
-	this->SendMessage(WM_REFRESH, NULL, NULL);
+	this->SendMessage(WM_ACCOUNT_REFRESH, NULL, NULL);
 }
 
 void CDialogPageAccount::OnBnClickedButton1()

@@ -4,6 +4,12 @@
 #include "pcap.h"
 #include <sstream>
 
+#define WM_ACCOUNT_REFRESH WM_USER + 1
+#define WM_COLLECT_REFRESH WM_USER + 2
+
+#define JV_STRING(node, value) (Json::stringValue == node.type()? node.asString() : value)
+#define JV_INT(node, value) (Json::intValue == node.type() || Json::uintValue == node.type() ||Json::realValue == node.type()? DoubleToString(node.asDouble()) : value)
+
 template<typename T>
 std::string TransToString(T src)
 {
@@ -11,6 +17,53 @@ std::string TransToString(T src)
 	oss << src;
 	return oss.str();
 }
+
+class CGroupInfo
+{
+public:
+	std::string CertificateName;
+	std::string CertificateType;
+	std::string CityID;
+	std::string Code;
+	std::string Gcate;
+	std::string Gid;
+	std::string GroupLabel;
+	std::string Latitude;
+	std::string Level;
+	std::string Longitude;
+	std::string MaxMemberNum;
+	std::string MemberNum;
+	std::string Name;
+	std::string OwnerUin;
+	std::string Gaddr;
+	std::string RichFingerMemo;
+	std::string Url;
+};
+
+class CCityL2
+{
+public:
+	CCityL2(std::string _id, std::string _name) : id(_id), name(_name) {};
+	std::string id;
+	std::string name;
+};
+
+class CCityL1
+{
+public:
+	std::string name;
+	std::vector<CCityL2> CityL2;
+};
+
+char dec2hexChar(short int n);
+
+short int hexChar2dec(char c);
+
+std::string escapeURL(const std::string &URL);
+
+std::string deescapeURL(const std::string &URL);
+
+std::string DoubleToString(double src);
 
 std::string ws2s(const std::wstring& ws);
 
@@ -40,9 +93,13 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 
 int CollectBuddy();
 
-int CollectGroup();
+int CollectGroup(std::vector<CGroupInfo>& group_all, int city_l1, int city_l2, const std::string& keyword);
+
+int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std::string& keyword);
 
 int GetCSRFToken(const std::string& e);
+
+std::wstring GetRunPathW();
 
 /* Ethernet Ê×²¿ */
 typedef struct ether_header{

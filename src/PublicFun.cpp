@@ -4,8 +4,86 @@
 #include "jsoncpp/json.h"
 #include <stdio.h>
 
+std::vector<CCityL1> g_Citys;
 CInfoGroup g_InfoGroup;
 int		   g_InfoGroupIndex = 0;
+
+#include<iostream>
+using namespace std;
+
+char dec2hexChar(short int n) {
+ if ( 0 <= n && n <= 9 ) {
+  return char( short('0') + n );
+ } else if ( 10 <= n && n <= 15 ) {
+  return char( short('A') + n - 10 );
+ } else {
+  return char(0);
+ }
+}
+
+short int hexChar2dec(char c) {
+ if ( '0'<=c && c<='9' ) {
+  return short(c-'0');
+ } else if ( 'a'<=c && c<='f' ) {
+  return ( short(c-'a') + 10 );
+ } else if ( 'A'<=c && c<='F' ) {
+  return ( short(c-'A') + 10 );
+ } else {
+  return -1;
+ }
+}
+
+std::string escapeURL(const std::string &URL)
+{
+ std::string result = "";
+ for ( unsigned int i=0; i<URL.size(); i++ ) {
+  char c = URL[i];
+  if (
+   ( '0'<=c && c<='9' ) ||
+   ( 'a'<=c && c<='z' ) ||
+   ( 'A'<=c && c<='Z' ) ||
+   c=='/' || c=='.'
+   ) {
+   result += c;
+  } else {
+   int j = (short int)c;
+   if ( j < 0 ) {
+    j += 256;
+   }
+   int i1, i0;
+   i1 = j / 16;
+   i0 = j - i1*16;
+   result += '%';
+   result += dec2hexChar(i1);
+   result += dec2hexChar(i0);
+  }
+ }
+ return result;
+}
+
+std::string deescapeURL(const std::string &URL) {
+ std::string result = "";
+ for ( unsigned int i=0; i<URL.size(); i++ ) {
+  char c = URL[i];
+  if ( c != '%' ) {
+   result += c;
+  } else {
+   char c1 = URL[++i];
+   char c0 = URL[++i];
+   int num = 0;
+   num += hexChar2dec(c1) * 16 + hexChar2dec(c0);
+   result += char(num);
+  }
+ }
+ return result;
+}
+
+std::string DoubleToString(double src)
+{
+	char str[256] = {0};
+    sprintf(str, "%.0llf", src);
+    return str;
+}
 
 std::string ws2s(const std::wstring& ws)
 {
@@ -237,10 +315,41 @@ std::string UTF8ToGBK(const std::string& strUTF8)
     return strTemp;  
 }
 
-int CollectGroup()
+int CollectGroup(std::vector<CGroupInfo>& group_all, int city_l1, int city_l2, const std::string& keyword)
+{
+	if (0 == city_l1)				// 全国
+	{
+		for (int i = 1; i < g_Citys.size(); ++i)
+		{
+			for (int j = 1; j < g_Citys[i].CityL2.size(); ++j)
+			{
+				CollectGroupEvery(group_all, atoi(g_Citys[i].CityL2[j].id.c_str()), keyword);
+				Sleep(5000);
+			}
+		}
+	}
+	else if (0 == city_l2)			// 全省
+	{
+		for (int i = 1; i < g_Citys[city_l1].CityL2.size(); ++i)
+		{
+			CollectGroupEvery(group_all, atoi(g_Citys[city_l1].CityL2[i].id.c_str()), keyword);
+			Sleep(5000);
+		}
+	}
+	else							// 单市
+	{
+		CollectGroupEvery(group_all, atoi(g_Citys[city_l1].CityL2[city_l2].id.c_str()), keyword);
+	}
+
+	return 0;
+}
+
+int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std::string& keyword)
 {
 	std::string qq_num = "2287738680";
-	std::string qq_skey = "ZLKJhKr8DC";
+	std::string qq_skey = "ZkiMTy7LBB";
+	int token = GetCSRFToken(qq_skey);
+	std::string k = escapeURL(Unicode2Utf8(L"交友"));
 
 	// 筛选QQ
 	//for (int i = 0; i < g_InfoGroup.size(); ++i)
@@ -256,7 +365,9 @@ int CollectGroup()
 	//{
 	//	return -1;
 	//}
-
+	
+		for (int page = 0, exit = false; !exit; ++page)
+		{
 	// post请求
 	curl_global_init(CURL_GLOBAL_ALL);
 
@@ -264,6 +375,7 @@ int CollectGroup()
 	curl_handle = curl_easy_init();
 	if (curl_handle)
 	{
+
 		int res = 0;
 		char szbuff[256] = {0};
 		std::string body;
@@ -284,7 +396,7 @@ int CollectGroup()
         headers = curl_slist_append(headers, "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36");
         res = curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, headers);
 		
-		memset(szbuff, 0,sizeof(szbuff));
+		memset(szbuff, 0, sizeof(szbuff));
 		_snprintf(szbuff, sizeof(szbuff), "uin=o0%s; skey=%s", qq_num.c_str(), qq_skey.c_str());
 		res = curl_easy_setopt(curl_handle, CURLOPT_COOKIE, szbuff);
 		curl_easy_setopt(curl_handle, CURLOPT_ACCEPT_ENCODING, "gzip");
@@ -293,11 +405,9 @@ int CollectGroup()
 		//res = curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1);
 		//res = curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
 		res = curl_easy_setopt(curl_handle, CURLOPT_POST, 1);
-		memset(szbuff, 0,sizeof(szbuff));
-		int token = GetCSRFToken(qq_skey);
-		std::string k = Unicode2Utf8(L"交友");
-		std::string keyword = Unicode2Utf8(L"123");
-		_snprintf(szbuff, sizeof(szbuff), "&n=8&st=1&iso=1&src=1&v=4903&bkn=%d&isRecommend=false&city_id=0&from=1&keyword=123&sort=0&wantnum=1&page=0&ldw=%d", token, token);
+		
+		memset(szbuff, 0, sizeof(szbuff));
+		_snprintf(szbuff, sizeof(szbuff), "k=%s&n=8&st=1&iso=1&src=1&v=5539&bkn=%d&isRecommend=false&city_id=%d&from=1&newSearch=false&keyword=%s&sort=0&wantnum=50&page=%d&ldw=%d", k.c_str(), token, cityid, keyword.c_str(), page, token);
         res = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, szbuff);    // 指定post内容
 		//res = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDSIZE, strlen("&n=8&st=1&iso=1&src=1&v=4903&bkn=1825472041&isRecommend=false&city_id=0&from=1&keyword=rthrth&sort=0&wantnum=1&page=0&ldw=1825472041"));
 		//res = curl_easy_setopt(curl_handle, CURLOPT_COOKIEFILE, "/Users/zhu/cookie");
@@ -308,15 +418,71 @@ int CollectGroup()
 		if (res != CURLE_OK)
 		{
 			::MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), s2ws(curl_easy_strerror((CURLcode)res)).c_str(), L"提示", MB_OK);
+			curl_slist_free_all(headers);
+			curl_easy_cleanup(curl_handle);
+			curl_global_cleanup();
+			return -1;
 		}
 		int n = body.size();
-		::MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), Utf82Unicode(body).c_str(), L"提示", MB_OK);
+		std::wstring l = Utf82Unicode(body);
+		//::MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), Utf82Unicode(body).c_str(), L"提示", MB_OK);
+
+		Json::Reader reader;
+		Json::Value root;
+		if (reader.parse(body, root))
+		{
+			Json::Value group_list = root["group_list"];
+			if (Json::Value() == group_list)
+			{
+				exit = true;
+				continue;
+			}
+
+			for (int i = 0; i < group_list.size(); ++i)
+			{
+				CGroupInfo group_one;
+				group_one.CertificateName = JV_STRING(group_list[i]["certificate_name"], "");
+				group_one.CertificateName = JV_STRING(group_list[i]["certificate_name"], "");
+				group_one.CertificateType = JV_INT(group_list[i]["certificate_type"], "");
+				group_one.CityID = JV_INT(group_list[i]["cityid"], "");
+				group_one.Code = JV_INT(group_list[i]["code"], "");
+				int j = 0;
+				for (j = 0; j < group_list[i]["gcate"].size(); ++j)
+				{
+					group_one.Gcate += JV_STRING(group_list[i]["gcate"][j], "") + " | ";
+				}
+				if (j > 0)
+				{
+					group_one.Gcate = group_one.Gcate.substr(0, group_one.Gcate.size() - 3);
+				}
+				group_one.Gid = JV_INT(group_list[i]["gid"], "");
+				group_one.GroupLabel = JV_STRING(group_list[i]["group_label"], "");
+				group_one.Latitude = JV_STRING(group_list[i]["latitude"], "");
+				group_one.Level = JV_INT(group_list[i]["level"], "");
+				group_one.Longitude = JV_STRING(group_list[i]["longitude"], "");
+				group_one.MaxMemberNum = JV_INT(group_list[i]["max_member_num"], "");;
+				group_one.MemberNum = JV_INT(group_list[i]["member_num"], "");
+				group_one.Name = JV_STRING(group_list[i]["name"], "");
+				group_one.OwnerUin = JV_INT(group_list[i]["owner_uin"], "");;
+				for (int j = 0; j < group_list[i]["qaddr"].size(); ++j)
+				{
+					group_one.Gaddr += JV_STRING(group_list[i]["qaddr"][j], "");
+				}
+				group_one.RichFingerMemo = JV_STRING(group_list[i]["richfingermemo"], "");
+				group_one.Url = JV_STRING(group_list[i]["url"], "");
+				group_all.push_back(group_one);
+			}
+		}
+
 
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl_handle);
+		
+		Sleep(5000);
 	}
 	
 	curl_global_cleanup();
+	}
 	return 0;
 }
 
@@ -328,6 +494,19 @@ int GetCSRFToken(const std::string& e)
 		n += (n << 5) + e[i];
 	}
 	return n & 2147483647;
+}
+
+std::wstring GetRunPathW()
+{
+	wchar_t path[1024]       = {0x00};
+    GetModuleFileNameW(NULL, path, 256);
+    PathRemoveFileSpecW(path);
+    std::wstring str = path;
+    WCHAR Dest[MAX_PATH] = { 0 };    
+    PathCombineW(Dest, NULL, str.c_str()); 
+    std::wstring progPath = Dest;
+    progPath += L"\\";
+    return progPath;
 }
 
 std::string CaptureNickname(const std::string& qq_number)
