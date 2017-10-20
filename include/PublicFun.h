@@ -40,6 +40,19 @@ public:
 	std::string Url;
 };
 
+class CLeaf
+{
+public:
+	std::string name;
+	std::string code;
+};
+
+class CNonLeaf : public CLeaf
+{
+public:
+	std::vector<CNonLeaf> child;
+};
+
 class CCityL2
 {
 public:
@@ -100,6 +113,10 @@ int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std:
 int GetCSRFToken(const std::string& e);
 
 std::wstring GetRunPathW();
+
+int ReadFile(const std::wstring& strPath, std::string& strCont);
+
+void Split(const std::string& src, const char* sep, std::vector<std::string>& res);
 
 /* Ethernet Ê×²¿ */
 typedef struct ether_header{

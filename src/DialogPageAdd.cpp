@@ -5,7 +5,7 @@
 #include "Market.h"
 #include "DialogPageAdd.h"
 #include "afxdialogex.h"
-
+#include "PublicFun.h"
 
 // CDialogPageAdd 对话框
 
@@ -67,9 +67,36 @@ void CDialogPageAdd::OnBnClickedButtonAdd()
 void CDialogPageAdd::OnBnClickedButtonImport()
 {
 	CFileDialog dlg(TRUE, _T("txt"), _T("test.txt"), OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_FILEMUSTEXIST, L"文本文件 (*.txt)|*.txt||", NULL);	//FALSE表示为“另存为”对话框，否则为“打开”对话框
-	dlg.m_ofn.lpstrInitialDir = _T("c:\\"); //打开文件夹   
+	dlg.m_ofn.lpstrInitialDir = _T("C:\\Users\\Administrator\\Desktop\\"); //打开文件夹   
 	if(IDOK == dlg.DoModal())
 	{
-		CString strFile = dlg.GetPathName();//获取完整路径
+		CString cstrFile = dlg.GetPathName();//获取完整路径
+
+		std::string strContent;
+		if (0 != ReadFile(cstrFile.GetBuffer(), strContent))
+		{
+			MessageBox(L"读取文件失败", L"提示", MB_OK);
+			return;
+		}
+		
+		m_listctlAdd.DeleteAllItems();
+
+		std::vector<std::string> vecRows;
+		Split(strContent, "\r\n", vecRows);
+		for (std::size_t i = 0; i < vecRows.size(); ++i)
+		{
+			std::vector<std::string> vecFields;
+			Split(vecRows[i], "\t", vecFields);
+			if (1 > vecFields.size())
+			{
+				continue;
+			}
+			
+			CString tmp;
+			tmp.Format(_T("%d"), i + 1);
+			m_listctlAdd.InsertItem(i, tmp);
+			m_listctlAdd.SetItemState(i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+			m_listctlAdd.SetItemText(i, 1, Utf82Unicode(vecFields[0]).c_str());
+		}
 	}
 }

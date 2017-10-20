@@ -36,8 +36,20 @@
 #define IDC_BUTTON_MASS                 1027
 #define IDC_BUTTON_IMPORT               1028
 #define IDC_COMBO_CITYL2                1029
-#define IDC_EDIT_KEYWORD                1030
 #define IDC_EDIT_COLLECT_KEYWORD        1030
+#define IDC_COMBO_COUNTRY               1031
+#define IDC_COMBO_PROVINCE              1032
+#define IDC_COMBO_CITY                  1033
+#define IDC_COMBO_DISTRICT              1034
+#define IDC_COMBO_HCOUNTRY              1035
+#define IDC_COMBO_HPROVINCE             1036
+#define IDC_COMBO_HCITY                 1037
+#define IDC_COMBO_HDISTRICT             1038
+#define IDC_COMBO_COLLECT_SEX           1039
+#define IDC_CHECK_COLLECT_ONLINE        1040
+#define IDC_CHECK_COLLECT_VIEDO         1042
+#define IDC_CHECK_COLLECT_VIDEO         1042
+#define IDC_COMBO_COLLECT_AGE           1043
 
 // Next default values for new objects
 // 
@@ -45,7 +57,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        317
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1031
+#define _APS_NEXT_CONTROL_VALUE         1043
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

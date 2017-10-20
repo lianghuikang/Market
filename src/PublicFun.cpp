@@ -4,6 +4,7 @@
 #include "jsoncpp/json.h"
 #include <stdio.h>
 
+CNonLeaf g_Locations;
 std::vector<CCityL1> g_Citys;
 CInfoGroup g_InfoGroup;
 int		   g_InfoGroupIndex = 0;
@@ -323,8 +324,11 @@ int CollectGroup(std::vector<CGroupInfo>& group_all, int city_l1, int city_l2, c
 		{
 			for (int j = 1; j < g_Citys[i].CityL2.size(); ++j)
 			{
-				CollectGroupEvery(group_all, atoi(g_Citys[i].CityL2[j].id.c_str()), keyword);
-				Sleep(5000);
+				if (0 != CollectGroupEvery(group_all, atoi(g_Citys[i].CityL2[j].id.c_str()), keyword))
+				{
+					return -1;
+				}
+				Sleep(3000);
 			}
 		}
 	}
@@ -332,13 +336,19 @@ int CollectGroup(std::vector<CGroupInfo>& group_all, int city_l1, int city_l2, c
 	{
 		for (int i = 1; i < g_Citys[city_l1].CityL2.size(); ++i)
 		{
-			CollectGroupEvery(group_all, atoi(g_Citys[city_l1].CityL2[i].id.c_str()), keyword);
-			Sleep(5000);
+			if (0 != CollectGroupEvery(group_all, atoi(g_Citys[city_l1].CityL2[i].id.c_str()), keyword))
+			{
+				return -1;
+			}
+			Sleep(3000);
 		}
 	}
 	else							// 单市
 	{
-		CollectGroupEvery(group_all, atoi(g_Citys[city_l1].CityL2[city_l2].id.c_str()), keyword);
+		if (0 != CollectGroupEvery(group_all, atoi(g_Citys[city_l1].CityL2[city_l2].id.c_str()), keyword))
+		{
+			return -1;
+		}
 	}
 
 	return 0;
@@ -347,7 +357,7 @@ int CollectGroup(std::vector<CGroupInfo>& group_all, int city_l1, int city_l2, c
 int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std::string& keyword)
 {
 	std::string qq_num = "2287738680";
-	std::string qq_skey = "ZkiMTy7LBB";
+	std::string qq_skey = "ZK9Zx8NKGl";
 	int token = GetCSRFToken(qq_skey);
 	std::string k = escapeURL(Unicode2Utf8(L"交友"));
 
@@ -366,8 +376,9 @@ int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std:
 	//	return -1;
 	//}
 	
-		for (int page = 0, exit = false; !exit; ++page)
-		{
+	for (int page = 0, exit = false; !exit; ++page)
+	{
+
 	// post请求
 	curl_global_init(CURL_GLOBAL_ALL);
 
@@ -407,7 +418,7 @@ int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std:
 		res = curl_easy_setopt(curl_handle, CURLOPT_POST, 1);
 		
 		memset(szbuff, 0, sizeof(szbuff));
-		_snprintf(szbuff, sizeof(szbuff), "k=%s&n=8&st=1&iso=1&src=1&v=5539&bkn=%d&isRecommend=false&city_id=%d&from=1&newSearch=false&keyword=%s&sort=0&wantnum=50&page=%d&ldw=%d", k.c_str(), token, cityid, keyword.c_str(), page, token);
+		_snprintf(szbuff, sizeof(szbuff), "k=%s&n=8&st=1&iso=1&src=1&v=5539&bkn=%d&isRecommend=false&city_id=%d&from=1&newSearch=false&keyword=%s&sort=0&wantnum=24&page=%d&ldw=%d", k.c_str(), token, cityid, keyword.c_str(), page, token);
         res = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, szbuff);    // 指定post内容
 		//res = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDSIZE, strlen("&n=8&st=1&iso=1&src=1&v=4903&bkn=1825472041&isRecommend=false&city_id=0&from=1&keyword=rthrth&sort=0&wantnum=1&page=0&ldw=1825472041"));
 		//res = curl_easy_setopt(curl_handle, CURLOPT_COOKIEFILE, "/Users/zhu/cookie");
@@ -417,11 +428,11 @@ int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std:
 		res = curl_easy_perform(curl_handle);
 		if (res != CURLE_OK)
 		{
-			::MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), s2ws(curl_easy_strerror((CURLcode)res)).c_str(), L"提示", MB_OK);
+			//::MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), s2ws(curl_easy_strerror((CURLcode)res)).c_str(), L"提示", MB_OK);
 			curl_slist_free_all(headers);
 			curl_easy_cleanup(curl_handle);
 			curl_global_cleanup();
-			return -1;
+			continue;
 		}
 		int n = body.size();
 		std::wstring l = Utf82Unicode(body);
@@ -440,8 +451,12 @@ int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std:
 
 			for (int i = 0; i < group_list.size(); ++i)
 			{
+				if (/*Json::Value() == group_list[i]["certificate_type"] || */2 == group_list[i]["certificate_type"].asInt())		// 过滤认证群
+				{
+					continue;
+				}
+
 				CGroupInfo group_one;
-				group_one.CertificateName = JV_STRING(group_list[i]["certificate_name"], "");
 				group_one.CertificateName = JV_STRING(group_list[i]["certificate_name"], "");
 				group_one.CertificateType = JV_INT(group_list[i]["certificate_type"], "");
 				group_one.CityID = JV_INT(group_list[i]["cityid"], "");
@@ -478,7 +493,7 @@ int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std:
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl_handle);
 		
-		Sleep(5000);
+		Sleep(3000);
 	}
 	
 	curl_global_cleanup();
@@ -644,6 +659,67 @@ size_t write_fun_string(void *data, size_t size, size_t nmember, std::string* sa
 	size_t sizes = size * nmember;
     save->append((char*)data, sizes);
     return sizes;
+}
+
+int ReadFile(const std::wstring& strPath, std::string& strCont)
+{
+	FILE* file = NULL;
+	file = _tfopen(strPath.c_str(), _T("rb"));
+	if (!file)
+	{
+		return -1;
+	}
+
+	fseek(file, 0, SEEK_END);
+	UINT64 size = ftell(file);
+	rewind(file);
+
+	char* buffer = (char*)malloc(sizeof(char) * size);
+	if (!buffer)
+	{
+		fclose(file);
+		return -1;
+	}
+	memset(buffer, 0, size);
+
+	UINT64 result = fread(buffer, 1, size, file);
+	if (result != size)
+	{
+		fclose(file);
+		free(buffer);
+		buffer = NULL;
+		return -1;
+	}
+	strCont = std::string(buffer, size);
+
+	fclose(file);
+	free(buffer);
+	buffer = NULL;
+	return 0;
+}
+
+void Split(const std::string& src, const char* sep, std::vector<std::string>& res)
+{
+	if (src.empty() || NULL == sep)
+	{
+		return;
+	}
+
+	int sep_len = strlen(sep);
+	std::size_t beg_pos = 0;
+	std::size_t sep_pos = src.find(sep);
+
+	while (std::string::npos != sep_pos)
+	{
+		res.push_back(std::string(src, beg_pos, sep_pos - beg_pos));
+		beg_pos = sep_pos + sep_len;
+		sep_pos = src.find(sep, beg_pos);
+	}
+
+	if (beg_pos <= src.size())
+	{
+		res.push_back(std::string(src, beg_pos));
+	}
 }
 #else
 int CaptureCookies()
