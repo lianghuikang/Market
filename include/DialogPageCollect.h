@@ -3,6 +3,7 @@
 #include "afxcmn.h"
 #include <string>
 #include <vector>
+#include "PublicFun.h"
 
 // CDialogPageCollect ¶Ô»°¿ò
 
@@ -22,6 +23,7 @@ protected:
 	int InitGroupCtrl();
 	int ResetAllCtrl();
 	int ClearCollectList();
+	CNonLeaf UnlimitNonLeaf(int level);
 	int InitLocation();
 	int InitCity();
 	virtual BOOL OnInitDialog();

@@ -294,7 +294,7 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 	}
 }
 
-int CollectBuddy()
+int CollectBuddy(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& param)
 {
 	return 0;
 }

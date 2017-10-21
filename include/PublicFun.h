@@ -18,6 +18,14 @@ std::string TransToString(T src)
 	return oss.str();
 }
 
+class CBuddyInfo
+{
+public:
+	std::string Code;
+	std::string Nickname;
+	std::string Age;
+};
+
 class CGroupInfo
 {
 public:
@@ -68,6 +76,23 @@ public:
 	std::vector<CCityL2> CityL2;
 };
 
+typedef struct _PARAM_BUDDY
+{
+	std::string keyword;			// 关键字
+	std::string age;				// 年龄
+	std::string sex;				// 性别
+	std::string firston;			// 在线
+	std::string video;				// 摄像头
+	std::string country;			// 所在地 country
+	std::string province;			// 所在地 province
+	std::string city;				// 所在地 city
+	std::string district;			// 所在地 district
+	std::string hcountry;			// 故乡 hcountry
+	std::string hprovince;			// 故乡 hprovince
+	std::string hcity;				// 故乡 hcity
+	std::string hdistrict;			// 故乡 hdistrict
+}PARAM_BUDDY;
+
 char dec2hexChar(short int n);
 
 short int hexChar2dec(char c);
@@ -104,7 +129,7 @@ DWORD WINAPI ThreadProc_CaptureCookies(LPVOID lpParam);
 
 void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data);
 
-int CollectBuddy();
+int CollectBuddy(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& param);
 
 int CollectGroup(std::vector<CGroupInfo>& group_all, int city_l1, int city_l2, const std::string& keyword);
 
