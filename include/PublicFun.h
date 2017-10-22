@@ -24,6 +24,7 @@ public:
 	std::string Code;
 	std::string Nickname;
 	std::string Age;
+	std::string Location;
 };
 
 class CGroupInfo
@@ -83,6 +84,7 @@ typedef struct _PARAM_BUDDY
 	std::string sex;				// 性别
 	std::string firston;			// 在线
 	std::string video;				// 摄像头
+	std::string online;
 	std::string country;			// 所在地 country
 	std::string province;			// 所在地 province
 	std::string city;				// 所在地 city
@@ -132,6 +134,8 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 int CollectBuddy(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& param);
 
 int CollectGroup(std::vector<CGroupInfo>& group_all, int city_l1, int city_l2, const std::string& keyword);
+
+int CollectBuddyEvery(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& param);
 
 int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std::string& keyword);
 

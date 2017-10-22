@@ -24,6 +24,8 @@ protected:
 	int ResetAllCtrl();
 	int ClearCollectList();
 	CNonLeaf UnlimitNonLeaf(int level);
+	std::string EscapeSex(int index);
+	std::string EscapeAge(int index);
 	int InitLocation();
 	int InitCity();
 	virtual BOOL OnInitDialog();

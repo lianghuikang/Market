@@ -296,24 +296,9 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 
 int CollectBuddy(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& param)
 {
-	return 0;
-}
+	CollectBuddyEvery(buddy_all, param);
 
-std::string UTF8ToGBK(const std::string& strUTF8)  
-{  
-    int len = MultiByteToWideChar(CP_UTF8, 0, strUTF8.c_str(), -1, NULL, 0);  
-    WCHAR* wszGBK = new WCHAR[len+1];
-    memset(wszGBK, 0, len * 2 + 2);  
-    MultiByteToWideChar(CP_UTF8, 0, (LPCCH)strUTF8.c_str(), -1, wszGBK, len);  
-  
-    len = WideCharToMultiByte(CP_ACP, 0, wszGBK, -1, NULL, 0, NULL, NULL);  
-    char *szGBK = new char[len + 1];  
-    memset(szGBK, 0, len + 1);  
-    WideCharToMultiByte(CP_ACP,0, wszGBK, -1, szGBK, len, NULL, NULL);   
-    std::string strTemp(szGBK);  
-    delete[]szGBK;  
-    delete[]wszGBK;  
-    return strTemp;  
+	return 0;
 }
 
 int CollectGroup(std::vector<CGroupInfo>& group_all, int city_l1, int city_l2, const std::string& keyword)
@@ -354,10 +339,104 @@ int CollectGroup(std::vector<CGroupInfo>& group_all, int city_l1, int city_l2, c
 	return 0;
 }
 
+int CollectBuddyEvery(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& param)
+{
+	std::string qq_num = "505519763";
+	std::string qq_skey = "ZnfWSLmYUP";
+	int token = GetCSRFToken(qq_skey);
+
+	for (int page = 0, exit = false; !exit && page < 3; ++page)
+	{
+
+	// post请求
+	curl_global_init(CURL_GLOBAL_ALL);
+
+	CURL* curl_handle = NULL;
+	curl_handle = curl_easy_init();
+	if (curl_handle)
+	{
+		int res = 0;
+		char szbuff[256] = {0};
+		std::string body;
+		std::string url = "http://cgi.find.qq.com//qqfind//buddy//search_v3";
+
+        struct curl_slist *headers = NULL;
+        headers = curl_slist_append(headers, "Accept:application/json, text/javascript, */*; q=0.01");
+        headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded; charset=UTF-8");
+        headers = curl_slist_append(headers, "Origin: http://find.qq.com");
+        headers = curl_slist_append(headers, "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.59 QQ/8.4.18357.201 Safari/537.36");
+        headers = curl_slist_append(headers, "Referer: http://find.qq.com/index.html?version=1&im_version=5485&width=910&height=610&search_target=0");
+        headers = curl_slist_append(headers, "Accept-Encoding: gzip,deflate");
+        headers = curl_slist_append(headers, "Accept-Language: en-us,en");
+		res = curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, headers);
+
+		memset(szbuff, 0, sizeof(szbuff));
+		_snprintf(szbuff, sizeof(szbuff), "uin=o0%s; skey=%s", qq_num.c_str(), qq_skey.c_str());
+		res = curl_easy_setopt(curl_handle, CURLOPT_COOKIE, szbuff);
+		curl_easy_setopt(curl_handle, CURLOPT_ACCEPT_ENCODING, "gzip");
+
+		res = curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());   // 指定url
+		res = curl_easy_setopt(curl_handle, CURLOPT_POST, 1);
+		
+		memset(szbuff, 0, sizeof(szbuff));
+		_snprintf(szbuff, sizeof(szbuff), 
+					"num=20&page=%d&sessionid=0&keyword=%s&agerg=%s&sex=%s&firston=%s&video=%s&country=%s&province=%s&city=%s&district=%s&hcountry=%s&hprovince=%s&hcity=%s&hdistrict=%s&online=%s&ldw=%d", 
+					page, param.keyword.c_str(), param.age.c_str(), param.sex.c_str(), param.firston.c_str(), param.video.c_str(), param.country.c_str(), param.province.c_str(), param.city.c_str(), param.district.c_str(),
+					param.hcountry.c_str(), param.hprovince.c_str(), param.hcity.c_str(), param.hdistrict.c_str(), param.online.c_str(), token);
+        res = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, szbuff);    // 指定post内容
+		res = curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_fun_string);
+		res = curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &body);
+		res = curl_easy_perform(curl_handle);
+		if (res != CURLE_OK)
+		{
+			//::MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), s2ws(curl_easy_strerror((CURLcode)res)).c_str(), L"提示", MB_OK);
+			curl_slist_free_all(headers);
+			curl_easy_cleanup(curl_handle);
+			curl_global_cleanup();
+		}
+
+		curl_slist_free_all(headers);
+		curl_easy_cleanup(curl_handle);
+
+		int n = body.size();
+		std::wstring l = Utf82Unicode(body);
+
+		Json::Reader reader;
+		Json::Value root;
+		if (reader.parse(body, root))
+		{
+			Json::Value buddy_list = root["result"]["buddy"]["info_list"];
+			if (Json::Value() == buddy_list || 0 == buddy_list.size())
+			{
+				exit = true;
+				continue;
+			}
+
+			for (int i = 0; i < buddy_list.size(); ++i)
+			{
+				CBuddyInfo buddy_one;
+
+				buddy_one.Code = JV_INT(buddy_list[i]["uin"], "");
+				buddy_one.Age = JV_INT(buddy_list[i]["age"], "");
+				buddy_one.Nickname = JV_STRING(buddy_list[i]["nick"], "");
+				buddy_one.Location = JV_STRING(buddy_list[i]["country"], "") + " " + JV_STRING(buddy_list[i]["province"], "") + " " + JV_STRING(buddy_list[i]["city"], "");
+				buddy_all.push_back(buddy_one);
+			}
+		}
+		Sleep(3000);
+	}
+
+	curl_global_cleanup();
+
+	}
+
+	return 0;
+}
+
 int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std::string& keyword)
 {
 	std::string qq_num = "2287738680";
-	std::string qq_skey = "ZK9Zx8NKGl";
+	std::string qq_skey = "ZufU06llRy";
 	int token = GetCSRFToken(qq_skey);
 	std::string k = escapeURL(Unicode2Utf8(L"交友"));
 
@@ -434,6 +513,10 @@ int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std:
 			curl_global_cleanup();
 			continue;
 		}
+
+		curl_slist_free_all(headers);
+		curl_easy_cleanup(curl_handle);
+
 		int n = body.size();
 		std::wstring l = Utf82Unicode(body);
 		//::MessageBox(AfxGetApp()->GetMainWnd()->GetSafeHwnd(), Utf82Unicode(body).c_str(), L"提示", MB_OK);
@@ -488,10 +571,6 @@ int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std:
 				group_all.push_back(group_one);
 			}
 		}
-
-
-		curl_slist_free_all(headers);
-		curl_easy_cleanup(curl_handle);
 		
 		Sleep(3000);
 	}
@@ -720,6 +799,23 @@ void Split(const std::string& src, const char* sep, std::vector<std::string>& re
 	{
 		res.push_back(std::string(src, beg_pos));
 	}
+}
+
+std::string UTF8ToGBK(const std::string& strUTF8)  
+{  
+    int len = MultiByteToWideChar(CP_UTF8, 0, strUTF8.c_str(), -1, NULL, 0);  
+    WCHAR* wszGBK = new WCHAR[len+1];
+    memset(wszGBK, 0, len * 2 + 2);  
+    MultiByteToWideChar(CP_UTF8, 0, (LPCCH)strUTF8.c_str(), -1, wszGBK, len);  
+  
+    len = WideCharToMultiByte(CP_ACP, 0, wszGBK, -1, NULL, 0, NULL, NULL);  
+    char *szGBK = new char[len + 1];  
+    memset(szGBK, 0, len + 1);  
+    WideCharToMultiByte(CP_ACP,0, wszGBK, -1, szGBK, len, NULL, NULL);   
+    std::string strTemp(szGBK);  
+    delete[]szGBK;  
+    delete[]wszGBK;  
+    return strTemp;  
 }
 #else
 int CaptureCookies()

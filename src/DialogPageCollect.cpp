@@ -129,6 +129,8 @@ int CDialogPageCollect::InitBuddyCtrl()
 	m_listctlCollect.InsertColumn(0, _T("序号"), LVCFMT_LEFT, 40);
 	m_listctlCollect.InsertColumn(1, _T("QQ号"), LVCFMT_LEFT, 80);
 	m_listctlCollect.InsertColumn(2, _T("昵称"), LVCFMT_LEFT, 80);
+	m_listctlCollect.InsertColumn(3, _T("年龄"), LVCFMT_LEFT, 40);
+	m_listctlCollect.InsertColumn(4, _T("所在地"), LVCFMT_LEFT, 80);
 	m_listctlCollect.InsertItem(0, NULL);			// 默认添加一行使显示水平滚动条
 
 	return 0;
@@ -233,6 +235,44 @@ CNonLeaf CDialogPageCollect::UnlimitNonLeaf(int level)
 	return res;
 }
 
+std::string CDialogPageCollect::EscapeSex(int index)
+{
+	switch (index)
+	{
+		// 性别: 0=不限 1=男 2=女
+	case 0:
+		return "0";
+	case 1:
+		return "1";
+	case 2:
+		return "2";
+	default:
+		return "0";
+	}
+}
+
+std::string CDialogPageCollect::EscapeAge(int index)
+{
+	switch (index)
+	{
+		// 年龄: agerg=11 agerg=12 agerg=13 agerg=14 agerg=15
+	case 0:
+		return "0";
+	case 1:
+		return "11";
+	case 2:
+		return "12";
+	case 3:
+		return "13";
+	case 4:
+		return "14";
+	case 5:
+		return "15";
+	default:
+		return "0";
+	}
+}
+
 int CDialogPageCollect::InitLocation()
 {
 	pugi::xml_document doc;
@@ -242,7 +282,12 @@ int CDialogPageCollect::InitLocation()
 		return -1;
 	}
 	
-	g_Locations.child.push_back(UnlimitNonLeaf(4));
+	CNonLeaf UnlimitDeep1 = UnlimitNonLeaf(1);
+	CNonLeaf UnlimitDeep2 = UnlimitNonLeaf(2);
+	CNonLeaf UnlimitDeep3 = UnlimitNonLeaf(3);
+	CNonLeaf UnlimitDeep4 = UnlimitNonLeaf(4);
+
+	g_Locations.child.push_back(UnlimitDeep4);
 	//CNonLeaf ulimit;
 	//ulimit.name = Unicode2Utf8(L"不限");
 	//ulimit.code = "0";
@@ -259,7 +304,7 @@ int CDialogPageCollect::InitLocation()
 		CNonLeaf country;
 		country.name = pCountry.attribute("Name").value();
 		country.code = pCountry.attribute("Code").value();
-		country.child.push_back(UnlimitNonLeaf(3));
+		country.child.push_back(UnlimitDeep3);
 		//country.child.push_back(ulimit);
 
 		for (pugi::xml_node pProvince = pCountry.child("State"); pProvince; pProvince = pProvince.next_sibling("State"))
@@ -273,7 +318,7 @@ int CDialogPageCollect::InitLocation()
 			CNonLeaf province;
 			province.name = pProvince.attribute("Name").value();
 			province.code = pProvince.attribute("Code").value();
-			province.child.push_back(UnlimitNonLeaf(2));
+			province.child.push_back(UnlimitDeep2);
 			//province.child.push_back(ulimit);
 
 			for (pugi::xml_node pCity = pProvince.child("City"); pCity; pCity = pCity.next_sibling("City"))
@@ -287,7 +332,7 @@ int CDialogPageCollect::InitLocation()
 				CNonLeaf city;
 				city.name = pCity.attribute("Name").value();
 				city.code = pCity.attribute("Code").value();
-				city.child.push_back(UnlimitNonLeaf(1));
+				city.child.push_back(UnlimitDeep1);
 				//city.child.push_back(ulimit);
 
 				for (pugi::xml_node pDistrict = pCity.child("Region"); pDistrict; pDistrict = pDistrict.next_sibling("Region"))
@@ -412,24 +457,43 @@ END_MESSAGE_MAP()
 LRESULT CDialogPageCollect::OnRefresh(WPARAM wParam, LPARAM lParam)
 {
 	m_listctlCollect.DeleteAllItems();
-
-	std::vector<CGroupInfo>* pGroupInfo = (std::vector<CGroupInfo>*)lParam;
-	for (int i = 0; i < pGroupInfo->size(); ++i)
+	
+	if (0 == (int)wParam)
 	{
-		CString tmp;
-		tmp.Format(_T("%d"), i + 1);
-		m_listctlCollect.InsertItem(i, tmp);
-		m_listctlCollect.SetItemState(i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+		std::vector<CBuddyInfo>* pBuddyInfo = (std::vector<CBuddyInfo>*)lParam;
+		for (int i = 0; i < pBuddyInfo->size(); ++i)
+		{
+			CString tmp;
+			tmp.Format(_T("%d"), i + 1);
+			m_listctlCollect.InsertItem(i, tmp);
+			m_listctlCollect.SetItemState(i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+			
+			m_listctlCollect.SetItemText(i, 1, Utf82Unicode(pBuddyInfo->at(i).Code).c_str());
+			m_listctlCollect.SetItemText(i, 2, Utf82Unicode(pBuddyInfo->at(i).Nickname).c_str());
+			m_listctlCollect.SetItemText(i, 3, Utf82Unicode(pBuddyInfo->at(i).Age).c_str());
+			m_listctlCollect.SetItemText(i, 4, Utf82Unicode(pBuddyInfo->at(i).Location).c_str());
+		}
+	}
+	else
+	{
+		std::vector<CGroupInfo>* pGroupInfo = (std::vector<CGroupInfo>*)lParam;
+		for (int i = 0; i < pGroupInfo->size(); ++i)
+		{
+			CString tmp;
+			tmp.Format(_T("%d"), i + 1);
+			m_listctlCollect.InsertItem(i, tmp);
+			m_listctlCollect.SetItemState(i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 		
-		m_listctlCollect.SetItemText(i, 1, Utf82Unicode(pGroupInfo->at(i).Code).c_str());
-		m_listctlCollect.SetItemText(i, 2, Utf82Unicode(pGroupInfo->at(i).Name).c_str());
-		m_listctlCollect.SetItemText(i, 3, Utf82Unicode(pGroupInfo->at(i).Gcate).c_str());
-		m_listctlCollect.SetItemText(i, 4, Utf82Unicode(pGroupInfo->at(i).OwnerUin).c_str());
-		m_listctlCollect.SetItemText(i, 5, Utf82Unicode(pGroupInfo->at(i).MemberNum).c_str());
-		m_listctlCollect.SetItemText(i, 6, Utf82Unicode(pGroupInfo->at(i).MaxMemberNum).c_str());
-		m_listctlCollect.SetItemText(i, 7, Utf82Unicode(pGroupInfo->at(i).Gaddr).c_str());
-		m_listctlCollect.SetItemText(i, 8, Utf82Unicode(pGroupInfo->at(i).CertificateName).c_str());
-		m_listctlCollect.SetItemText(i, 9, Utf82Unicode(pGroupInfo->at(i).RichFingerMemo).c_str());
+			m_listctlCollect.SetItemText(i, 1, Utf82Unicode(pGroupInfo->at(i).Code).c_str());
+			m_listctlCollect.SetItemText(i, 2, Utf82Unicode(pGroupInfo->at(i).Name).c_str());
+			m_listctlCollect.SetItemText(i, 3, Utf82Unicode(pGroupInfo->at(i).Gcate).c_str());
+			m_listctlCollect.SetItemText(i, 4, Utf82Unicode(pGroupInfo->at(i).OwnerUin).c_str());
+			m_listctlCollect.SetItemText(i, 5, Utf82Unicode(pGroupInfo->at(i).MemberNum).c_str());
+			m_listctlCollect.SetItemText(i, 6, Utf82Unicode(pGroupInfo->at(i).MaxMemberNum).c_str());
+			m_listctlCollect.SetItemText(i, 7, Utf82Unicode(pGroupInfo->at(i).Gaddr).c_str());
+			m_listctlCollect.SetItemText(i, 8, Utf82Unicode(pGroupInfo->at(i).CertificateName).c_str());
+			m_listctlCollect.SetItemText(i, 9, Utf82Unicode(pGroupInfo->at(i).RichFingerMemo).c_str());
+		}
 	}
 
 	return 0;
@@ -440,20 +504,40 @@ void CDialogPageCollect::OnBnClickedButtonCollect()
 	CString cstrKeyword;
 	m_editCollectKeyword.GetWindowText(cstrKeyword);
 
-	int nIndex = m_comboCollect.GetCurSel();
-	if (0 == nIndex)
+	int nCollect = m_comboCollect.GetCurSel();
+	if (0 == nCollect)
 	{
 		PARAM_BUDDY param;
 
-		// 性别: 0=不限 1=男 2=女
+		param.keyword = escapeURL(Unicode2Utf8(cstrKeyword.GetBuffer()));
 
-		// 年龄: agerg=11 agerg=12 agerg=13 agerg=14 agerg=15
+		param.sex		= EscapeSex(m_comboCollectSex.GetCurSel() <= 0 ? 0 : m_comboCollectSex.GetCurSel());
+		param.age		= EscapeAge(m_comboCollectAge.GetCurSel() <= 0 ? 0 : m_comboCollectAge.GetCurSel());
+		param.firston	= (BST_CHECKED == m_checkCollectOnline.GetCheck()) ? "1" : "0";
+		param.video		= (BST_CHECKED == m_checkCollectVideo.GetCheck())  ? "1" : "0";
+		param.online	= (BST_UNCHECKED == m_checkCollectOnline.GetCheck() && BST_UNCHECKED == m_checkCollectVideo.GetCheck() ? "0" : "1");
 
-		//param.age = m_comboCollectAge.GetCurSel();
+		int nCountry	= m_comboCountry.GetCurSel()	<= 0 ? 0 : m_comboCountry.GetCurSel();
+		int nProvince	= m_comboProvince.GetCurSel()	<= 0 ? 0 : m_comboProvince.GetCurSel();
+		int nCity		= m_comboCity.GetCurSel()		<= 0 ? 0 : m_comboCity.GetCurSel();
+		int nDistrict	= m_comboDistrict.GetCurSel()	<= 0 ? 0 : m_comboDistrict.GetCurSel();
+		param.country	= g_Locations.child[nCountry].code;
+		param.province	= g_Locations.child[nCountry].child[nProvince].code;
+		param.city		= g_Locations.child[nCountry].child[nProvince].child[nCity].code;
+		param.district	= g_Locations.child[nCountry].child[nProvince].child[nCity].child[nDistrict].code;
+
+		int nHcountry	= m_comboHcountry.GetCurSel()	<= 0 ? 0 : m_comboHcountry.GetCurSel();
+		int nHprovince	= m_comboHprovince.GetCurSel()	<= 0 ? 0 : m_comboHprovince.GetCurSel();
+		int nHcity		= m_comboHcity.GetCurSel()		<= 0 ? 0 : m_comboHcity.GetCurSel();
+		int nHdistrict	= m_comboHdistrict.GetCurSel()	<= 0 ? 0 : m_comboHdistrict.GetCurSel();
+		param.hcountry	= g_Locations.child[nHcountry].code;
+		param.hprovince = g_Locations.child[nHcountry].child[nHprovince].code;
+		param.hcity		= g_Locations.child[nHcountry].child[nHprovince].child[nHcity].code;
+		param.district	= g_Locations.child[nHcountry].child[nHprovince].child[nHcity].child[nHdistrict].code;
 
 		std::vector<CBuddyInfo> buddy_all;
 		CollectBuddy(buddy_all, param);
-		this->SendMessage(WM_COLLECT_REFRESH, nIndex, (LPARAM)&buddy_all);
+		this->SendMessage(WM_COLLECT_REFRESH, nCollect, (LPARAM)&buddy_all);
 	}
 	else
 	{
@@ -463,7 +547,7 @@ void CDialogPageCollect::OnBnClickedButtonCollect()
 		
 		std::vector<CGroupInfo> group_all;
 		CollectGroup(group_all, nCityL1, nCityL2, escapeURL(Unicode2Utf8(cstrKeyword.GetBuffer())));
-		this->SendMessage(WM_COLLECT_REFRESH, nIndex, (LPARAM)&group_all);
+		this->SendMessage(WM_COLLECT_REFRESH, nCollect, (LPARAM)&group_all);
 	}
 }
 
