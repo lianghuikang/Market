@@ -129,8 +129,10 @@ int CDialogPageCollect::InitBuddyCtrl()
 	m_listctlCollect.InsertColumn(0, _T("序号"), LVCFMT_LEFT, 40);
 	m_listctlCollect.InsertColumn(1, _T("QQ号"), LVCFMT_LEFT, 80);
 	m_listctlCollect.InsertColumn(2, _T("昵称"), LVCFMT_LEFT, 80);
-	m_listctlCollect.InsertColumn(3, _T("年龄"), LVCFMT_LEFT, 40);
-	m_listctlCollect.InsertColumn(4, _T("所在地"), LVCFMT_LEFT, 80);
+	m_listctlCollect.InsertColumn(3, _T("性别"), LVCFMT_LEFT, 40);
+	m_listctlCollect.InsertColumn(4, _T("年龄"), LVCFMT_LEFT, 40);
+	m_listctlCollect.InsertColumn(5, _T("所在地"), LVCFMT_LEFT, 80);
+	m_listctlCollect.InsertColumn(6, _T("状态"), LVCFMT_LEFT, 40);
 	m_listctlCollect.InsertItem(0, NULL);			// 默认添加一行使显示水平滚动条
 
 	return 0;
@@ -470,8 +472,10 @@ LRESULT CDialogPageCollect::OnRefresh(WPARAM wParam, LPARAM lParam)
 			
 			m_listctlCollect.SetItemText(i, 1, Utf82Unicode(pBuddyInfo->at(i).Code).c_str());
 			m_listctlCollect.SetItemText(i, 2, Utf82Unicode(pBuddyInfo->at(i).Nickname).c_str());
-			m_listctlCollect.SetItemText(i, 3, Utf82Unicode(pBuddyInfo->at(i).Age).c_str());
-			m_listctlCollect.SetItemText(i, 4, Utf82Unicode(pBuddyInfo->at(i).Location).c_str());
+			m_listctlCollect.SetItemText(i, 3, Utf82Unicode(pBuddyInfo->at(i).Sex).c_str());
+			m_listctlCollect.SetItemText(i, 4, Utf82Unicode(pBuddyInfo->at(i).Age).c_str());
+			m_listctlCollect.SetItemText(i, 5, Utf82Unicode(pBuddyInfo->at(i).Location).c_str());
+			m_listctlCollect.SetItemText(i, 6, Utf82Unicode(pBuddyInfo->at(i).Stat).c_str());
 		}
 	}
 	else
@@ -566,6 +570,7 @@ void CDialogPageCollect::OnBnClickedButtonExport()
 		}
 
 		std::wstring wstrContent;
+		wstrContent += (0 == m_comboCollect.GetCurSel() ? L"TYPE=0\r\n" : L"TYPE=1\r\n");
 		for (int i = 0; i < m_listctlCollect.GetItemCount(); ++i)
 		{
 			wstrContent += m_listctlCollect.GetItemText(i, 1).GetBuffer();

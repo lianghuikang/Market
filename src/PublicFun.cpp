@@ -344,6 +344,11 @@ int CollectBuddyEvery(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& par
 	std::string qq_num = "505519763";
 	std::string qq_skey = "ZnfWSLmYUP";
 	int token = GetCSRFToken(qq_skey);
+	const static std::string strMen = Unicode2Utf8(L"男");
+	const static std::string strWomen = Unicode2Utf8(L"女");
+	const static std::string strUnknow = Unicode2Utf8(L"未知");
+	const static std::string strOnline = Unicode2Utf8(L"在线");
+	const static std::string strOffline = Unicode2Utf8(L"离线");
 
 	for (int page = 0, exit = false; !exit && page < 3; ++page)
 	{
@@ -393,6 +398,7 @@ int CollectBuddyEvery(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& par
 			curl_slist_free_all(headers);
 			curl_easy_cleanup(curl_handle);
 			curl_global_cleanup();
+			continue;
 		}
 
 		curl_slist_free_all(headers);
@@ -412,15 +418,39 @@ int CollectBuddyEvery(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& par
 				continue;
 			}
 
+			bool exact = JV_STRING(root["result"]["buddy"]["exact"], "") == "1" ? true : false;	// 精确查找
+
 			for (int i = 0; i < buddy_list.size(); ++i)
 			{
 				CBuddyInfo buddy_one;
 
 				buddy_one.Code = JV_INT(buddy_list[i]["uin"], "");
-				buddy_one.Age = JV_INT(buddy_list[i]["age"], "");
 				buddy_one.Nickname = JV_STRING(buddy_list[i]["nick"], "");
+				std::string Sex = JV_INT(buddy_list[i]["gender"], "255");
+				buddy_one.Sex = (Sex == "1" ? strMen : (Sex == "2" ? strWomen : strUnknow));
+				if (exact)
+				{
+					std::string year = JV_INT(buddy_list[i]["birthday"]["year"], "");
+					std::string month = JV_INT(buddy_list[i]["birthday"]["month"], "");
+					std::string day = JV_INT(buddy_list[i]["birthday"]["day"], "");
+					if (!year.empty() && !month.empty() && !day.empty())
+					{
+						buddy_one.Age = TransToString(Ymd2Age(atoi(year.c_str()), atoi(month.c_str()), atoi(day.c_str())));
+					}
+				}
+				else
+				{
+					buddy_one.Age = JV_INT(buddy_list[i]["age"], "");
+				}
 				buddy_one.Location = JV_STRING(buddy_list[i]["country"], "") + " " + JV_STRING(buddy_list[i]["province"], "") + " " + JV_STRING(buddy_list[i]["city"], "");
+				buddy_one.Stat = (JV_INT(buddy_list[i]["stat"], "20") == "1" ? strOnline : strOffline);
 				buddy_all.push_back(buddy_one);
+			}
+
+			if (exact)
+			{
+				exit = true;
+				continue;
 			}
 		}
 		Sleep(3000);
@@ -798,6 +828,28 @@ void Split(const std::string& src, const char* sep, std::vector<std::string>& re
 	if (beg_pos <= src.size())
 	{
 		res.push_back(std::string(src, beg_pos));
+	}
+}
+
+int Ymd2Age(int year, int month, int day)
+{
+	time_t tt_now;
+	struct tm* tm_now = NULL;
+
+	time(&tt_now);
+	tm_now = localtime(&tt_now);
+
+	int year_now = tm_now->tm_year + 1900;
+	int month_now = tm_now->tm_mon + 1;
+	int day_now = tm_now->tm_mday;
+
+	if (month_now < month || (month_now == month && day_now < day))
+	{
+		return year_now - year - 1;
+	}
+	else
+	{
+		return year_now - year;
 	}
 }
 

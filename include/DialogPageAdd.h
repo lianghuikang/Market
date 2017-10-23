@@ -27,4 +27,14 @@ protected:
 public:
 	afx_msg void OnBnClickedButtonAdd();
 	afx_msg void OnBnClickedButtonImport();
+	afx_msg void OnBnClickedButtonMsgAdd();
+	afx_msg void OnBnClickedButtonMsgDelete();
+	afx_msg void OnBnClickedButtonMsgSave();
+	afx_msg void OnBnClickedButtonMsgImport();
+	afx_msg void OnBnClickedButtonMsgExport();
+protected:
+	CEdit m_editMsg;
+	CListCtrl m_listMsg;
+public:
+	afx_msg void OnNMClickListMsg(NMHDR *pNMHDR, LRESULT *pResult);
 };

@@ -23,8 +23,10 @@ class CBuddyInfo
 public:
 	std::string Code;
 	std::string Nickname;
+	std::string Sex;
 	std::string Age;
 	std::string Location;
+	std::string Stat;
 };
 
 class CGroupInfo
@@ -146,6 +148,8 @@ std::wstring GetRunPathW();
 int ReadFile(const std::wstring& strPath, std::string& strCont);
 
 void Split(const std::string& src, const char* sep, std::vector<std::string>& res);
+
+int Ymd2Age(int year, int month, int day);
 
 /* Ethernet Ê×²¿ */
 typedef struct ether_header{

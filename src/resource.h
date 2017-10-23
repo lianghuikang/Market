@@ -47,9 +47,16 @@
 #define IDC_COMBO_HDISTRICT             1038
 #define IDC_COMBO_COLLECT_SEX           1039
 #define IDC_CHECK_COLLECT_ONLINE        1040
-#define IDC_CHECK_COLLECT_VIEDO         1042
 #define IDC_CHECK_COLLECT_VIDEO         1042
 #define IDC_COMBO_COLLECT_AGE           1043
+#define IDC_LIST_MSG                    1044
+#define IDC_BUTTON_SAVE                 1045
+#define IDC_BUTTON_MSG_SAVE             1045
+#define IDC_BUTTON_MSG_DELETE           1046
+#define IDC_BUTTON_MSG_ADD              1047
+#define IDC_BUTTON_MSG_EXPORT           1048
+#define IDC_BUTTON_MSG_IMPORT           1049
+#define IDC_EDIT_MSG                    1050
 
 // Next default values for new objects
 // 
@@ -57,7 +64,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        317
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1043
+#define _APS_NEXT_CONTROL_VALUE         1051
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif
