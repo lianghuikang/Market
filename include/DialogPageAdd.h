@@ -1,7 +1,7 @@
 #pragma once
 #include "afxwin.h"
 #include "afxcmn.h"
-
+#include <string>
 
 // CDialogAdd 对话框
 
@@ -20,6 +20,9 @@ protected:
 	virtual BOOL OnInitDialog();
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	void BuddyAdd(HWND hwnd, const std::wstring& account, const std::wstring& msg);
+	void GroupAdd(HWND hwnd, const std::wstring& account, const std::wstring& msg);
+	static BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()
 	CComboBox m_comboAdd;

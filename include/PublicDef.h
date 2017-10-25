@@ -21,6 +21,7 @@ public:
 	E_STATUS_TYPE status;			// 状态
 	std::wstring  skey;				// skey
 	HWND		  windows;			// 主窗口
+	HWND		  window_search;	// 查找窗口
 	DWORD		  processid;		// 进程号
 	DWORD		  threadid;			// 主线程号
 };

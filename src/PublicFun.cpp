@@ -3,6 +3,7 @@
 #include "curl/curl.h"
 #include "jsoncpp/json.h"
 #include <stdio.h>
+#include <list>
 
 CNonLeaf g_Locations;
 std::vector<CCityL1> g_Citys;
@@ -11,6 +12,155 @@ int		   g_InfoGroupIndex = 0;
 
 #include<iostream>
 using namespace std;
+
+void MouseClick(HWND hwnd, DWORD x, DWORD y)
+{
+	LPARAM lparam = MAKELPARAM(x, y);
+	::PostMessage(hwnd, WM_LBUTTONDOWN, MK_LBUTTON, lparam);
+	::PostMessage(hwnd, WM_LBUTTONUP, 0, lparam);
+}
+
+void KeyReturn(HWND hwnd)
+{
+	// 模拟回车键
+	::PostMessage(hwnd, WM_KEYDOWN, VK_RETURN, 0x001C0001);
+	Sleep(50);
+	::PostMessage(hwnd, WM_KEYUP, VK_RETURN, 0xC01C0001);
+	Sleep(50);
+}
+
+void KeyTab(HWND hwnd)
+{
+	// 模拟TAB键
+	::PostMessage(hwnd, WM_KEYDOWN, VK_TAB, 0x000F0001);
+	Sleep(50);
+	::PostMessage(hwnd, WM_KEYUP, VK_TAB, 0xC00F0001);
+	Sleep(50);
+}
+
+void KeyCtrlA(HWND hwnd)
+{
+	// 模拟CTRL+A组合键
+	keybd_event(VK_CONTROL, 0x1D, 0, 0);
+	Sleep(50);
+	::PostMessage(hwnd, WM_KEYDOWN, 'A', 0x001E0001);
+	Sleep(50);
+	::PostMessage(hwnd, WM_KEYUP, 'A', 0xC01E0001);
+	Sleep(50);
+	keybd_event(VK_CONTROL, 0x1D, KEYEVENTF_KEYUP, 0);
+	Sleep(50);
+}
+
+void KeyCtrlC(const std::string& src)
+{
+	if (::OpenClipboard(NULL))											// 打开剪贴板
+	{
+		::EmptyClipboard();												// 清空剪贴板
+		HANDLE hGlobal = ::GlobalAlloc(GHND, src.length() + 1);			// 分配全局内存并获取句柄
+		LPBYTE lpGlobal = (LPBYTE)GlobalLock(hGlobal);					// 锁定全局内存
+		memcpy(lpGlobal, src.c_str(), src.length());
+		lpGlobal[src.length()] = '\0';
+		::GlobalUnlock(hGlobal);										// 解锁全局内存
+		::SetClipboardData(CF_TEXT, hGlobal);							// 设置内存数据到剪贴板
+		::CloseClipboard();												// 关闭剪贴板
+	}
+}
+
+void KeyCtrlV(HWND hwnd)
+{
+	// 模拟CTRL+V组合键
+	keybd_event(VK_CONTROL, 0x1D, 0, 0);
+	Sleep(50);
+	//::PostMessage(hwnd, WM_KEYDOWN, VK_CONTROL, 0x001D0001);		// 无法实现效果
+	::PostMessage(hwnd, WM_KEYDOWN, 'V', 0x002F0001);
+	Sleep(50);
+	//::PostMessage(hwnd, WM_CHAR, 0x16, 0x002F0001);
+	::PostMessage(hwnd, WM_KEYUP, 'V', 0xC02F0001);
+	Sleep(50);
+	//::PostMessage(hwnd, WM_KEYUP, VK_CONTROL, 0xC01D0001);
+	keybd_event(VK_CONTROL, 0x1D, KEYEVENTF_KEYUP, 0);
+	Sleep(50);
+}
+
+HWND SearchHwndUnderThread(int thread_id, const wchar_t* title,	bool fuzzy)
+{
+	std::list<HWND> listThreadWnd;
+	EnumThreadWindows(thread_id, EnumThreadWndProc, (LPARAM)&listThreadWnd);						// 获取主线程下所有窗口
+	for (std::list<HWND>::iterator iter = listThreadWnd.begin(); iter != listThreadWnd.end(); ++iter)
+	{
+		CString cstrWindowText;
+		::GetWindowText(*iter, cstrWindowText.GetBuffer(256), 256);
+		std::wstring::size_type npos = std::wstring::npos;
+		std::wstring wstrWindowText = cstrWindowText.GetBuffer();
+
+		if (fuzzy)
+		{
+			if (std::wstring::npos != (npos = wstrWindowText.find(title)))
+			{
+				return *iter;
+			}
+		}
+		else
+		{
+			if (wstrWindowText == title)
+			{
+				return *iter;
+			}
+		}
+	}
+	return NULL;
+}
+
+HWND SearchHwndUnderDesktop(const wchar_t* title, bool fuzzy)
+{
+	CWnd* pDesktopWnd = CWnd::GetDesktopWindow();
+	CWnd* pWnd = pDesktopWnd->GetWindow(GW_CHILD);
+	while (NULL != pWnd)
+	{
+		CString cstrWindowText;
+		::GetWindowText(pWnd->GetSafeHwnd(), cstrWindowText.GetBuffer(256), 256);															// 获取QQ顶层窗口
+		std::wstring::size_type npos = std::wstring::npos;
+		std::wstring wstrWindowText = cstrWindowText.GetBuffer();
+
+		if (fuzzy)
+		{
+			if (std::wstring::npos != (npos = wstrWindowText.find(title)))
+			{
+				return pWnd->GetSafeHwnd();
+			}
+		}
+		else
+		{
+			if (title == wstrWindowText)
+			{
+				return pWnd->GetSafeHwnd();
+			}
+		}
+
+		pWnd = pWnd->GetWindow(GW_HWNDNEXT);
+	}
+}
+
+bool IfHaveHwndUnderThread(int thread_id, const HWND const hwnd)
+{
+	std::list<HWND> listThreadWnd;
+	EnumThreadWindows(thread_id, EnumThreadWndProc, (LPARAM)&listThreadWnd);						// 获取主线程下所有窗口
+	for (std::list<HWND>::iterator iter = listThreadWnd.begin(); iter != listThreadWnd.end(); ++iter)
+	{
+		if (hwnd == *iter)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
+{
+	std::list<HWND>* pList = (std::list<HWND>*)lParam;
+	pList->push_back(hwnd);
+	return true;
+}
 
 char dec2hexChar(short int n) {
  if ( 0 <= n && n <= 9 ) {
@@ -287,6 +437,16 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 							g_InfoGroup[g_InfoGroupIndex].skey = s2ws(skey);
 							pcap_breakloop(adhandle);
 						}
+						else
+						{
+							npos_skey_right = http_txt.find("\r\n", npos_skey_left);
+							if (std::string::npos != npos_skey_right)
+							{
+								std::string skey = http_txt.substr(npos_skey_left + 6, npos_skey_right - npos_skey_left - 6);
+								g_InfoGroup[g_InfoGroupIndex].skey = s2ws(skey);
+								pcap_breakloop(adhandle);
+							}
+						}
 					}
 				}
 			}
@@ -341,8 +501,23 @@ int CollectGroup(std::vector<CGroupInfo>& group_all, int city_l1, int city_l2, c
 
 int CollectBuddyEvery(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& param)
 {
-	std::string qq_num = "505519763";
-	std::string qq_skey = "ZnfWSLmYUP";
+	std::string qq_num;
+	std::string qq_skey;
+
+	for (int i = 0; i < g_InfoGroup.size(); ++i)
+	{
+		if (!g_InfoGroup[i].number.empty() && !g_InfoGroup[i].skey.empty())
+		{
+			qq_num = ws2s(g_InfoGroup[i].number);
+			qq_skey = ws2s(g_InfoGroup[i].skey);
+			break;
+		}
+	}
+	if (qq_num.empty() || qq_skey.empty())
+	{
+		return -1;
+	}
+
 	int token = GetCSRFToken(qq_skey);
 	const static std::string strMen = Unicode2Utf8(L"男");
 	const static std::string strWomen = Unicode2Utf8(L"女");

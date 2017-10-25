@@ -6,6 +6,10 @@
 #include "DialogPageAdd.h"
 #include "afxdialogex.h"
 #include "PublicFun.h"
+#include "jsoncpp/json.h"
+#include <list>
+
+extern CInfoGroup g_InfoGroup;
 
 // CDialogPageAdd 对话框
 
@@ -62,6 +66,81 @@ HBRUSH CDialogPageAdd::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	return (HBRUSH)GetStockObject(WHITE_BRUSH);
 }
 
+void CDialogPageAdd::BuddyAdd(HWND hwnd, const std::wstring& account, const std::wstring& msg)
+{
+	//DWORD process_id = 0;
+	DWORD thread_id = GetWindowThreadProcessId(hwnd, NULL);
+	if (!thread_id)
+	{
+		return;
+	}
+
+	// 显示窗口
+	::ShowWindow(hwnd, SW_SHOWNORMAL);
+	::SetForegroundWindow(hwnd);
+
+	MouseClick(hwnd, 35, 100);
+	KeyCtrlC(Unicode2Utf8(account));
+	KeyCtrlA(hwnd);
+	KeyCtrlV(hwnd);
+	KeyReturn(hwnd);
+
+	HWND hwnd_friend = NULL;
+	for (int i = 0; i < 5; ++i)
+	{
+		Sleep(1000);
+		MouseClick(hwnd, 122, 311);
+
+		for (int j = 0; j < 5; ++j)
+		{
+			Sleep(1000);
+			hwnd_friend = SearchHwndUnderThread(thread_id, L"添加好友");
+			if (hwnd_friend)
+			{
+				break;
+			}
+		}
+		if (hwnd_friend)
+		{
+			break;
+		}
+	}
+	if (!hwnd_friend)
+	{
+		return;
+	}
+	
+	MouseClick(hwnd_friend, 160, 85);
+	KeyCtrlC(ws2s(msg));
+	KeyCtrlA(hwnd_friend);
+	KeyCtrlV(hwnd_friend);
+	KeyTab(hwnd_friend);
+	KeyReturn(hwnd_friend);
+
+	int nTryTimes = 5;
+	while (IfHaveHwndUnderThread(thread_id, hwnd_friend) && nTryTimes-- > 0)
+	{
+		Sleep(1000);
+		KeyReturn(hwnd_friend);
+	}
+
+	if (IfHaveHwndUnderThread(thread_id, hwnd_friend))
+	{
+		::SendMessage(hwnd_friend, WM_CLOSE, 0, 0);
+	}
+}
+
+void CDialogPageAdd::GroupAdd(HWND hwnd, const std::wstring& account, const std::wstring& msg)
+{
+}
+
+BOOL CALLBACK CDialogPageAdd::EnumThreadWndProc(HWND hwnd, LPARAM lParam)
+{
+	std::list<HWND>* pList = (std::list<HWND>*)lParam;
+	pList->push_back(hwnd);
+	return true;
+}
+
 BEGIN_MESSAGE_MAP(CDialogPageAdd, CDialogEx)
 	ON_WM_CTLCOLOR()
 	ON_BN_CLICKED(IDC_BUTTON_ADD, &CDialogPageAdd::OnBnClickedButtonAdd)
@@ -76,6 +155,99 @@ END_MESSAGE_MAP()
 
 void CDialogPageAdd::OnBnClickedButtonAdd()
 {
+	// 搜索查找窗口
+#if 1
+	std::vector<HWND> vecSearchHwnd;
+	CWnd* pDesktopWnd = CWnd::GetDesktopWindow();
+	CWnd* pWnd = pDesktopWnd->GetWindow(GW_CHILD);
+	while (NULL != pWnd)
+	{
+		CString cstrWindowText;
+		::GetWindowText(pWnd->GetSafeHwnd(), cstrWindowText.GetBuffer(256), 256);
+		if (L"查找" == cstrWindowText)																							// 获取QQ顶层窗口
+		{
+			vecSearchHwnd.push_back(pWnd->GetSafeHwnd());
+		}
+
+		pWnd = pWnd->GetWindow(GW_HWNDNEXT);
+	}
+#else
+	for (std::size_t i = 0; i < g_InfoGroup.size(); ++i)
+	{
+		g_InfoGroup[i].window_search = NULL;
+		std::list<HWND> listThreadWnd;
+		EnumThreadWindows(g_InfoGroup[i].threadid, EnumThreadWndProc, (LPARAM)&listThreadWnd);						// 获取主线程下所有窗口
+		for (std::list<HWND>::iterator iter = listThreadWnd.begin(); iter != listThreadWnd.end(); ++iter)
+		{
+			std::wstring::size_type npos = std::wstring::npos;
+			CString cstrWindowText;
+			::GetWindowText(*iter, cstrWindowText.GetBuffer(256), 256);
+			std::wstring wstrWindowText = cstrWindowText.GetBuffer();
+			if (std::wstring::npos != (npos = wstrWindowText.find(L"查找")))
+			{
+				g_InfoGroup[i].window_search = *iter;
+				break;
+			}
+		}
+	}
+#endif
+
+	int nHwndCount = vecSearchHwnd.size();
+	if (nHwndCount <= 0)
+	{
+		MessageBox(L"未搜索到任何\"查找\"窗口", L"提示", MB_OK);
+		return;
+	}
+
+	int nMsgCount = m_listMsg.GetItemCount();
+	if (nMsgCount <= 0)
+	{
+		MessageBox(L"请输入至少一条验证消息", L"提示", MB_OK);
+		return;
+	}
+	
+	int x = 0;
+	int y = 0;
+	if (0 == m_comboAdd.GetCurSel())
+	{
+		x = 35;
+		y = 100;
+	}
+	else
+	{
+		x = 150;
+		y = 105;
+	}
+	
+	int nHwndIndex = 0;
+	int nMsgIndex = 0;
+	int nRowCount = m_listctlAdd.GetItemCount();
+	if (0 == m_comboAdd.GetCurSel())
+	{
+		for (int nRowIndex = 0; nRowIndex < nRowCount; ++nRowIndex)
+		{
+			CString cstrAccount = m_listctlAdd.GetItemText(nRowIndex, 1);
+
+			nMsgIndex = nRowIndex %  nMsgCount;
+			CString cstrMsg = m_listMsg.GetItemText(nMsgIndex, 1);
+
+			nHwndIndex =  nRowIndex % nHwndCount;
+			BuddyAdd(vecSearchHwnd[nHwndIndex], cstrAccount.GetBuffer(), cstrMsg.GetBuffer());
+		}
+	}
+	else
+	{
+		for (int nRowIndex = 0; nRowIndex < nRowCount; ++nRowIndex)
+		{
+			CString cstrAccount = m_listctlAdd.GetItemText(nRowIndex, 1);
+
+			nMsgIndex = nRowIndex %  nMsgCount;
+			CString cstrMsg = m_listMsg.GetItemText(nMsgIndex, 1);
+
+			nHwndIndex =  nRowIndex % nHwndCount;
+			GroupAdd(vecSearchHwnd[nHwndIndex], cstrAccount.GetBuffer(), cstrMsg.GetBuffer());
+		}
+	}
 }
 
 void CDialogPageAdd::OnBnClickedButtonImport()
@@ -147,6 +319,8 @@ void CDialogPageAdd::OnBnClickedButtonMsgAdd()
 	m_listMsg.InsertItem(nRow, tmp);
 	m_listMsg.SetItemState(nRow, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 	m_listMsg.SetItemText(nRow, 1, cstrContent.GetBuffer());
+
+	m_editMsg.SetWindowText(L"");
 }
 
 void CDialogPageAdd::OnBnClickedButtonMsgDelete()
@@ -183,14 +357,90 @@ void CDialogPageAdd::OnBnClickedButtonMsgSave()
 	{
 		m_listMsg.SetItemText(m_listMsg.GetNextSelectedItem(pos), 1, cstrContent.GetBuffer());
 	}
+
+	m_editMsg.SetWindowText(L"");
 }
 
 void CDialogPageAdd::OnBnClickedButtonMsgImport()
 {
+	CFileDialog dlg(TRUE, _T("txt"), _T("test.txt"), OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_FILEMUSTEXIST, L"文本文件 (*.txt)|*.txt||", NULL);	//FALSE表示为“另存为”对话框，否则为“打开”对话框
+	dlg.m_ofn.lpstrInitialDir = _T("C:\\Users\\Administrator\\Desktop\\"); //打开文件夹   
+	if(IDOK == dlg.DoModal())
+	{
+		CString cstrFile = dlg.GetPathName();//获取完整路径
+
+		std::string strContent;
+		if (0 != ReadFile(cstrFile.GetBuffer(), strContent))
+		{
+			MessageBox(L"读取文件失败", L"提示", MB_OK);
+			return;
+		}
+		
+		Json::Reader reader;
+		Json::Value root;
+		if (reader.parse(strContent, root))
+		{
+			Json::Value msg_list = root["msg_list"];
+			if (Json::arrayValue != msg_list.type())
+			{
+				MessageBox(L"文件格式错误", L"提示", MB_OK);
+				return;
+			}
+
+			for (int i = 0; i < msg_list.size(); ++i)
+			{
+				Json::Value msg = msg_list[i]["msg"];
+				if (Json::stringValue != msg.type())
+				{
+					MessageBox(L"字段类型错误", L"提示", MB_OK);
+				}
+
+				int nRow = m_listMsg.GetItemCount();
+				CString tmp;
+				tmp.Format(_T("%d"), nRow + 1);
+				m_listMsg.InsertItem(nRow, tmp);
+				m_listMsg.SetItemState(nRow, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+				m_listMsg.SetItemText(nRow, 1, Utf82Unicode(msg.asString()).c_str());
+			}
+		}
+	}
 }
 
 void CDialogPageAdd::OnBnClickedButtonMsgExport()
 {
+	CFileDialog dlg(FALSE, _T("txt"), _T("test.txt"), OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, L"文本文件 (*.txt)|*.txt||", NULL);	//FALSE表示为“另存为”对话框，否则为“打开”对话框
+	dlg.m_ofn.lpstrInitialDir = _T("C:\\Users\\Administrator\\Desktop\\"); //打开文件夹   
+	if(IDOK == dlg.DoModal())
+	{
+		CString cstrFile = dlg.GetPathName();//获取完整路径
+		FILE* pFile = NULL;
+		if (NULL == (pFile = _tfopen(cstrFile.GetBuffer(), L"wb")))
+		{
+			MessageBox(L"打开文件失败", L"提示", MB_OK);
+			return;
+		}
+
+		Json::Value root;
+		Json::Value msg_list;
+		int nRow = m_listMsg.GetItemCount();
+		for (int i = 0; i < nRow; ++i)
+		{
+			CString cstrContent;
+			cstrContent = m_listMsg.GetItemText(i, 1);
+
+			Json::Value msg;
+			msg["msg"] = Unicode2Utf8(cstrContent.GetBuffer());
+			msg_list.append(msg);
+		}
+		root["msg_list"] = msg_list;
+
+		std::string strContent = root.toStyledString();
+		if (1 != fwrite(strContent.c_str(), strContent.size(), 1, pFile))
+		{
+			MessageBox(L"写入文件不完整", L"提示", MB_OK);
+		}
+		fclose(pFile);
+	}
 }
 
 void CDialogPageAdd::OnNMClickListMsg(NMHDR *pNMHDR, LRESULT *pResult)

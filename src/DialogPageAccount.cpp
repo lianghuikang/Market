@@ -202,7 +202,7 @@ void CDialogPageAccount::OnBnClickedButtonDetect()
 			DWORD dwThreadId = GetWindowThreadProcessId(pWnd->GetSafeHwnd(), &dwProcessId);										// 根据QQ顶层窗口获取主线程号
 
 			std::list<HWND> listThreadWnd;
-			EnumThreadWindows(dwThreadId, CDialogPageAccount::EnumThreadWndProc, (LPARAM)&listThreadWnd);						// 获取主线程下所有窗口
+			EnumThreadWindows(dwThreadId, EnumThreadWndProc, (LPARAM)&listThreadWnd);						// 获取主线程下所有窗口
 			for (std::list<HWND>::iterator iter = listThreadWnd.begin(); iter != listThreadWnd.end(); ++iter)
 			{
 				std::wstring::size_type npos = std::wstring::npos;

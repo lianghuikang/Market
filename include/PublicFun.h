@@ -97,6 +97,26 @@ typedef struct _PARAM_BUDDY
 	std::string hdistrict;			// ¹ÊÏç hdistrict
 }PARAM_BUDDY;
 
+void MouseClick(HWND hwnd, DWORD x, DWORD y);
+
+void KeyReturn(HWND hwnd);
+
+void KeyTab(HWND hwnd);
+
+void KeyCtrlA(HWND hwnd);
+
+void KeyCtrlC(const std::string& src);
+
+void KeyCtrlV(HWND hwnd);
+
+HWND SearchHwndUnderThread(int thread_id, const wchar_t* title, bool fuzzy = true);
+
+HWND SearchHwndUnderDesktop(const wchar_t* title, bool fuzzy = true);
+
+bool IfHaveHwndUnderThread(int thread_id, const HWND const hwnd);
+
+static BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam);
+
 char dec2hexChar(short int n);
 
 short int hexChar2dec(char c);
