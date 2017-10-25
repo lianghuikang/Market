@@ -132,6 +132,65 @@ void CDialogPageAdd::BuddyAdd(HWND hwnd, const std::wstring& account, const std:
 
 void CDialogPageAdd::GroupAdd(HWND hwnd, const std::wstring& account, const std::wstring& msg)
 {
+	DWORD thread_id = GetWindowThreadProcessId(hwnd, NULL);
+	if (!thread_id)
+	{
+		return;
+	}
+
+	// 显示窗口
+	::ShowWindow(hwnd, SW_SHOWNORMAL);
+	::SetForegroundWindow(hwnd);
+
+	MouseClick(hwnd, 145, 100);
+	KeyCtrlC(Unicode2Utf8(account));
+	KeyCtrlA(hwnd);
+	KeyCtrlV(hwnd);
+	KeyReturn(hwnd);
+
+	HWND hwnd_friend = NULL;
+	for (int i = 0; i < 5; ++i)
+	{
+		Sleep(1000);
+		MouseClick(hwnd, 265, 345);
+
+		for (int j = 0; j < 5; ++j)
+		{
+			Sleep(1000);
+			hwnd_friend = SearchHwndUnderThread(thread_id, L"添加群");
+			if (hwnd_friend)
+			{
+				break;
+			}
+		}
+		if (hwnd_friend)
+		{
+			break;
+		}
+	}
+	if (!hwnd_friend)
+	{
+		return;
+	}
+
+	MouseClick(hwnd_friend, 165, 80);
+	KeyCtrlC(ws2s(msg));
+	KeyCtrlA(hwnd_friend);
+	KeyCtrlV(hwnd_friend);
+	KeyTab(hwnd_friend);
+	KeyReturn(hwnd_friend);
+
+	int nTryTimes = 5;
+	while (IfHaveHwndUnderThread(thread_id, hwnd_friend) && nTryTimes-- > 0)
+	{
+		Sleep(1000);
+		KeyReturn(hwnd_friend);
+	}
+
+	if (IfHaveHwndUnderThread(thread_id, hwnd_friend))
+	{
+		::SendMessage(hwnd_friend, WM_CLOSE, 0, 0);
+	}
 }
 
 BOOL CALLBACK CDialogPageAdd::EnumThreadWndProc(HWND hwnd, LPARAM lParam)

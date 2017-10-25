@@ -640,25 +640,24 @@ int CollectBuddyEvery(std::vector<CBuddyInfo>& buddy_all, const PARAM_BUDDY& par
 
 int CollectGroupEvery(std::vector<CGroupInfo>& group_all, int cityid, const std::string& keyword)
 {
-	std::string qq_num = "2287738680";
-	std::string qq_skey = "ZufU06llRy";
+	std::string qq_num;
+	std::string qq_skey;
+	// É¸Ñ¡QQ
+	for (int i = 0; i < g_InfoGroup.size(); ++i)
+	{
+		if (!g_InfoGroup[i].number.empty() && !g_InfoGroup[i].skey.empty())
+		{
+			qq_num = ws2s(g_InfoGroup[i].number);
+			qq_skey = ws2s(g_InfoGroup[i].skey);
+			break;
+		}
+	}
+	if (qq_num.empty() || qq_skey.empty())
+	{
+		return -1;
+	}
 	int token = GetCSRFToken(qq_skey);
 	std::string k = escapeURL(Unicode2Utf8(L"½»ÓÑ"));
-
-	// É¸Ñ¡QQ
-	//for (int i = 0; i < g_InfoGroup.size(); ++i)
-	//{
-	//	if (!g_InfoGroup[i].number.empty() && !g_InfoGroup[i].skey.empty())
-	//	{
-	//		qq_num = ws2s(g_InfoGroup[i].number);
-	//		qq_skey = ws2s(g_InfoGroup[i].skey);
-	//		break;
-	//	}
-	//}
-	//if (qq_num.empty() || qq_skey.empty())
-	//{
-	//	return -1;
-	//}
 	
 	for (int page = 0, exit = false; !exit; ++page)
 	{
