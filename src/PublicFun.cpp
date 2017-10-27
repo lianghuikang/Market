@@ -20,6 +20,15 @@ void MouseClick(HWND hwnd, DWORD x, DWORD y)
 	::PostMessage(hwnd, WM_LBUTTONUP, 0, lparam);
 }
 
+void KeyDown(HWND hwnd)
+{
+	// 模拟方向下键
+	::PostMessage(hwnd, WM_KEYDOWN, VK_DOWN, 0x01500001);
+	Sleep(50);
+	::PostMessage(hwnd, WM_KEYUP, VK_DOWN, 0xC1500001);
+	Sleep(50);
+}
+
 void KeyReturn(HWND hwnd)
 {
 	// 模拟回车键
@@ -64,6 +73,19 @@ void KeyCtrlC(const std::string& src)
 		::SetClipboardData(CF_TEXT, hGlobal);							// 设置内存数据到剪贴板
 		::CloseClipboard();												// 关闭剪贴板
 	}
+}
+
+void KeyCtrlEnter(HWND hwnd)
+{
+	// 模拟CTRL+ENTER组合键
+	keybd_event(VK_CONTROL, 0x1D, 0, 0);
+	Sleep(50);
+	::PostMessage(hwnd, WM_KEYDOWN, VK_RETURN, 0x001C0001);
+	Sleep(50);
+	::PostMessage(hwnd, WM_KEYUP, VK_RETURN, 0xC01C0001);
+	Sleep(50);
+	keybd_event(VK_CONTROL, 0x1D, KEYEVENTF_KEYUP, 0);
+	Sleep(50);
 }
 
 void KeyCtrlV(HWND hwnd)

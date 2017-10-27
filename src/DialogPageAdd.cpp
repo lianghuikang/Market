@@ -223,7 +223,7 @@ void CDialogPageAdd::OnBnClickedButtonAdd()
 	{
 		CString cstrWindowText;
 		::GetWindowText(pWnd->GetSafeHwnd(), cstrWindowText.GetBuffer(256), 256);
-		if (L"查找" == cstrWindowText)																							// 获取QQ顶层窗口
+		if (L"查找" == cstrWindowText)	// 获取"查找"顶层窗口
 		{
 			vecSearchHwnd.push_back(pWnd->GetSafeHwnd());
 		}

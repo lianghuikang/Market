@@ -99,6 +99,8 @@ typedef struct _PARAM_BUDDY
 
 void MouseClick(HWND hwnd, DWORD x, DWORD y);
 
+void KeyDown(HWND hwnd);
+
 void KeyReturn(HWND hwnd);
 
 void KeyTab(HWND hwnd);
@@ -106,6 +108,8 @@ void KeyTab(HWND hwnd);
 void KeyCtrlA(HWND hwnd);
 
 void KeyCtrlC(const std::string& src);
+
+void KeyCtrlEnter(HWND hwnd);
 
 void KeyCtrlV(HWND hwnd);
 
