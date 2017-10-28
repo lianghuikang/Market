@@ -55,6 +55,49 @@ HBRUSH CDialogPageMass::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	return (HBRUSH)GetStockObject(WHITE_BRUSH);
 }
 
+void CDialogPageMass::MassForBuddy()
+{
+	std::vector<HWND> vecQQHwnd =  GetAllQQHwnd();
+	for (std::size_t i = 0; i < vecQQHwnd.size(); ++i)
+	{
+		int NoWnd = 0;
+		while (NoWnd < 10)
+		{
+			KeyDown(vecQQHwnd[i]);
+			KeyReturn(vecQQHwnd[i]);
+			Sleep(500);
+			
+			HWND topWnd = ::GetForegroundWindow();
+			CString cstrWindowText;
+			::GetWindowText(topWnd, cstrWindowText.GetBuffer(256), 256);
+			CString cstrClassName;
+			::GetClassName(topWnd, cstrClassName.GetBuffer(256), 256);
+			if (L"TXGuiFoundation" == cstrClassName && L"QQ" != cstrWindowText)
+			{
+				KeyCtrlA(topWnd);
+				KeyCtrlV(topWnd);
+				KeyCtrlEnter(topWnd);
+				//KeyReturn(topWnd);
+				::SendMessage(topWnd, WM_CLOSE, 0, 0);
+				Sleep(500);
+				NoWnd = 0;
+			}
+			else
+			{
+				NoWnd++;
+			}
+		}
+	}
+}
+
+void CDialogPageMass::MassForGroup()
+{
+}
+
+void CDialogPageMass::MassForGroupMember()
+{
+}
+
 BEGIN_MESSAGE_MAP(CDialogPageMass, CDialogEx)
 	ON_WM_CTLCOLOR()
 	ON_BN_CLICKED(IDC_BUTTON_MASS, &CDialogPageMass::OnBnClickedButtonMass)
@@ -68,46 +111,21 @@ END_MESSAGE_MAP()
 
 void CDialogPageMass::OnBnClickedButtonMass()
 {
-	std::vector<HWND> vecQQHwnd;
-	CWnd* pDesktopWnd = CWnd::GetDesktopWindow();
-	CWnd* pWnd = pDesktopWnd->GetWindow(GW_CHILD);
-	
-	while (NULL != pWnd)
+	int nMass = m_comboMass.GetCurSel();
+	if (0 == nMass)
 	{
-		CString cstrWindowText;
-		::GetWindowText(pWnd->GetSafeHwnd(), cstrWindowText.GetBuffer(256), 256);
-
-		CString cstrClassName;
-		::GetClassName(pWnd->GetSafeHwnd(), cstrClassName.GetBuffer(256), 256);
-
-		if (L"QQ" == cstrWindowText && L"TXGuiFoundation" == cstrClassName)	// »ñÈ¡QQ¶¥²ã´°¿Ú
-		{
-			vecQQHwnd.push_back(pWnd->GetSafeHwnd());
-		}
-
-		pWnd = pWnd->GetWindow(GW_HWNDNEXT);
+		MassForBuddy();
 	}
-
-	for (std::size_t i = 0; i < vecQQHwnd.size(); ++i)
+	else if (1 == nMass)
 	{
-		for (std::size_t j = 0; j < 10; ++j)
-		{
-			KeyDown(vecQQHwnd[i]);
-			KeyReturn(vecQQHwnd[i]);
-			
-			HWND topWnd = ::GetForegroundWindow();
-			CString cstrClassName;
-			::GetClassName(pWnd->GetSafeHwnd(), cstrClassName.GetBuffer(256), 256);
-			if (L"TXGuiFoundation" == cstrClassName)
-			{
-				KeyCtrlA(topWnd);
-				KeyCtrlV(topWnd);
-				KeyCtrlEnter(topWnd);
-				Sleep(1000);
-				::SendMessage(topWnd, WM_CLOSE, 0, 0);
-				Sleep(1000);
-			}
-		}
+		MassForGroup();
+	}
+	else if (2 == nMass)
+	{
+		MassForGroupMember();
+	}
+	else
+	{
 	}
 }
 

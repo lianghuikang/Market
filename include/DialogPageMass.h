@@ -21,6 +21,10 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 
+	void MassForBuddy();
+	void MassForGroup();
+	void MassForGroupMember();
+
 	DECLARE_MESSAGE_MAP()
 	CComboBox m_comboMass;
 public:

@@ -97,6 +97,8 @@ typedef struct _PARAM_BUDDY
 	std::string hdistrict;			// ¹ÊÏç hdistrict
 }PARAM_BUDDY;
 
+std::vector<HWND> GetAllQQHwnd();
+
 void MouseClick(HWND hwnd, DWORD x, DWORD y);
 
 void KeyDown(HWND hwnd);

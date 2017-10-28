@@ -13,6 +13,29 @@ int		   g_InfoGroupIndex = 0;
 #include<iostream>
 using namespace std;
 
+std::vector<HWND> GetAllQQHwnd()
+{
+	std::vector<HWND> vecQQHwnd;
+
+	CWnd* pDesktopWnd = CWnd::GetDesktopWindow();
+	CWnd* pWnd = pDesktopWnd->GetWindow(GW_CHILD);
+	while (NULL != pWnd)
+	{
+		CString cstrWindowText;
+		::GetWindowText(pWnd->GetSafeHwnd(), cstrWindowText.GetBuffer(256), 256);
+		CString cstrClassName;
+		::GetClassName(pWnd->GetSafeHwnd(), cstrClassName.GetBuffer(256), 256);
+		if (L"QQ" == cstrWindowText && L"TXGuiFoundation" == cstrClassName)	// »ñÈ¡QQ¶¥²ã´°¿Ú
+		{
+			vecQQHwnd.push_back(pWnd->GetSafeHwnd());
+		}
+
+		pWnd = pWnd->GetWindow(GW_HWNDNEXT);
+	}
+
+	return vecQQHwnd;
+}
+
 void MouseClick(HWND hwnd, DWORD x, DWORD y)
 {
 	LPARAM lparam = MAKELPARAM(x, y);
